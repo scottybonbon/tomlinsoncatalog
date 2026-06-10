@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>MSL — Tomlinson Materials · prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Inter:wght@400;450;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+ --ink:#15171A;--ink2:#3A3F46;--mut:#6B7178;--mut2:#9AA0A7;--line:#E8E8E4;--line2:#F1F1ED;
+ --bg:#FFFFFF;--surf:#F7F6F3;--surf2:#EFEEE9;--paper:#FAFAF8;
+ --red:#D81F2C;--redh:#B3121E;--redt:#FBE9EB;--green:#1B9A50;--greent:#E9F5EE;--amber:#B9760C;
+ --disp:"Inter",sans-serif;--ui:"Inter",sans-serif;--brand:"Michroma",sans-serif;
+ --sh:0 1px 2px rgba(20,23,26,.05);--sh2:0 4px 16px rgba(20,23,26,.08);--shl:0 14px 40px rgba(20,23,26,.13);
+ --r:10px;--rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ui);color:var(--ink);background:var(--bg);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+img,svg{display:block}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.wrap{max-width:1360px;margin:0 auto;padding:0 28px}
+.disp{font-family:var(--disp);font-weight:800;letter-spacing:-.02em}
+.brand{font-family:var(--brand);text-transform:uppercase}
+.tick::before{content:"";display:block;width:30px;height:3px;background:var(--red);border-radius:2px;margin-bottom:13px}
+
+/* ribbon */
+.ribbon{background:#0E0F11;color:#9AA0A7;font-size:11.5px;text-align:center;padding:7px 14px;letter-spacing:.03em}
+.ribbon b{color:#fff;font-weight:600}.ribbon .r{color:#FF5A66;font-weight:700}
+
+/* utility */
+.util{background:var(--surf);border-bottom:1px solid var(--line);font-size:12px;color:var(--mut)}
+.util .wrap{display:flex;align-items:center;justify-content:space-between;height:38px}
+.util .l,.util .r{display:flex;align-items:center;gap:22px}
+.util a:hover{color:var(--ink)}
+.util .dot{width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;margin-right:7px;vertical-align:1px}
+.util b.acct{color:var(--ink);font-weight:600}
+
+/* header */
+header.main{background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+.hd{display:flex;align-items:center;gap:30px;height:78px}
+.logo{display:flex;align-items:center;gap:11px;cursor:pointer;flex:0 0 auto}
+.logo .brandlogo{height:34px;width:auto;display:block}
+.logo .mark{font-family:var(--brand);font-size:21px;letter-spacing:.01em;color:var(--ink);line-height:1;-webkit-text-stroke:0.95px var(--ink);paint-order:stroke fill}
+.logo .mark s{color:var(--red);text-decoration:none;-webkit-text-stroke:0.95px var(--red)}
+.logo .by{font-size:9.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.09em;line-height:1.25;border-left:1px solid var(--line);padding-left:11px}
+.logo .by b{color:var(--red);font-family:var(--brand);font-size:9.5px;letter-spacing:.005em;-webkit-text-stroke:.45px var(--red);paint-order:stroke fill}
+.logo .by .tlogo{height:9px;width:auto;display:inline-block;vertical-align:-0.5px;margin:0 0 1px 2px}
+.search{flex:1;position:relative}
+.search input{width:100%;height:48px;border:1px solid var(--line);background:var(--surf);border-radius:var(--r);padding:0 48px 0 44px;font-size:15px;font-family:var(--ui);color:var(--ink);outline:none;transition:.15s}
+.search input:focus{background:#fff;border-color:var(--ink);box-shadow:var(--sh)}
+.search input::placeholder{color:var(--mut2)}
+.search .mag{position:absolute;left:15px;top:14px;width:20px;height:20px;stroke:var(--mut);fill:none;stroke-width:2}
+.search .go{position:absolute;right:7px;top:7px;height:34px;padding:0 14px;background:var(--ink);color:#fff;border-radius:var(--rs);font-weight:600;font-size:13px;transition:.15s}
+.search .go:hover{background:var(--red)}
+.suggest{position:absolute;top:56px;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shl);overflow:hidden;display:none;z-index:60}
+.suggest.on{display:block}
+.sug{display:flex;align-items:center;gap:13px;padding:10px 15px;cursor:pointer;border-bottom:1px solid var(--line2)}
+.sug:last-child{border-bottom:none}.sug:hover{background:var(--surf)}
+.sug .ti{width:42px;height:42px;border-radius:7px;overflow:hidden;flex:0 0 auto;border:1px solid var(--line)}
+.sug .nm{font-weight:600;font-size:13.5px}.sug .sk{font-size:11.5px;color:var(--mut)}
+.sug .pr{margin-left:auto;font-weight:600;font-size:13px}
+.acts{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.ib{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 13px;border-radius:var(--rs);font-size:11px;font-weight:500;color:var(--ink2);transition:.12s}
+.ib:hover{background:var(--surf)}
+.ib svg{width:21px;height:21px;stroke:var(--ink);fill:none;stroke-width:1.7}
+.ib .badge{position:absolute;margin-top:-7px;margin-left:15px;background:var(--red);color:#fff;font-size:10px;font-weight:700;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* category nav */
+nav.cat{background:#fff;border-bottom:1px solid var(--line)}
+nav.cat .wrap{display:flex;align-items:center;gap:0;height:48px}
+.navi{display:flex;align-items:center;gap:8px;padding:0 16px;height:48px;font-size:13.5px;font-weight:500;color:var(--ink2);border-bottom:2px solid transparent;transition:.12s;white-space:nowrap}
+.navi:first-of-type{padding-left:0}
+.navi:hover{color:var(--red);border-bottom-color:var(--red)}
+.navi.all{background:var(--ink);color:#fff;border-radius:var(--rs);height:36px;padding:0 16px;font-weight:600}
+.navi.all:hover{background:var(--ink2);border-bottom-color:transparent}
+.navi.all svg{width:15px;height:15px;stroke:#fff;stroke-width:2}
+.navsp{flex:1}
+.navi.m{color:var(--mut);font-size:13px}.navi.m:hover{color:var(--ink);border-bottom-color:transparent}
+
+/* views */
+.view{display:none}.view.on{display:block;animation:fade .22s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.shead{display:flex;align-items:flex-end;justify-content:space-between;margin:0 0 20px}
+.shead h2{font-family:var(--disp);font-weight:800;font-size:25px;letter-spacing:-.02em}
+.shead .lk{color:var(--ink);font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.shead .lk:hover{color:var(--red)}.shead .lk svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.4;fill:none}
+.block{padding:46px 0 0}
+
+/* HERO */
+.hero{padding:40px 0 8px}
+.herogrid{display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center}
+.hero .ey{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:18px}
+.hero h1{font-family:var(--brand);text-transform:uppercase;font-size:46px;line-height:1.14;letter-spacing:.002em;margin-bottom:24px;-webkit-text-stroke:2.7px var(--ink);paint-order:stroke fill}
+.hero p.l{font-size:18px;color:var(--ink2);max-width:480px;line-height:1.5;margin-bottom:26px}
+.hero .seg{display:flex;gap:9px;margin-bottom:0}
+.hero .seg a{font-size:13px;font-weight:600;padding:10px 16px;border:1px solid var(--line);border-radius:30px;color:var(--ink2);transition:.12s}
+.hero .seg a:hover{border-color:var(--ink);color:var(--ink)}
+.hero .seg a.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.herofeat{position:relative;aspect-ratio:4/3.4}
+.herofeat .sw{position:absolute;inset:0;-webkit-clip-path:polygon(100.0% 50.0%,99.9% 66.9%,99.7% 73.0%,99.2% 77.4%,98.6% 81.0%,97.9% 84.1%,96.9% 86.7%,95.8% 89.1%,94.4% 91.1%,92.9% 92.9%,91.1% 94.4%,89.1% 95.8%,86.7% 96.9%,84.1% 97.9%,81.0% 98.6%,77.4% 99.2%,73.0% 99.7%,66.9% 99.9%,50.0% 100.0%,33.1% 99.9%,27.0% 99.7%,22.6% 99.2%,19.0% 98.6%,15.9% 97.9%,13.3% 96.9%,10.9% 95.8%,8.9% 94.4%,7.1% 92.9%,5.6% 91.1%,4.2% 89.1%,3.1% 86.7%,2.1% 84.1%,1.4% 81.0%,0.8% 77.4%,0.3% 73.0%,0.1% 66.9%,0.0% 50.0%,0.1% 33.1%,0.3% 27.0%,0.8% 22.6%,1.4% 19.0%,2.1% 15.9%,3.1% 13.3%,4.2% 10.9%,5.6% 8.9%,7.1% 7.1%,8.9% 5.6%,10.9% 4.2%,13.3% 3.1%,15.9% 2.1%,19.0% 1.4%,22.6% 0.8%,27.0% 0.3%,33.1% 0.1%,50.0% 0.0%,66.9% 0.1%,73.0% 0.3%,77.4% 0.8%,81.0% 1.4%,84.1% 2.1%,86.7% 3.1%,89.1% 4.2%,91.1% 5.6%,92.9% 7.1%,94.4% 8.9%,95.8% 10.9%,96.9% 13.3%,97.9% 15.9%,98.6% 19.0%,99.2% 22.6%,99.7% 27.0%,99.9% 33.1%);clip-path:polygon(100.0% 50.0%,99.9% 66.9%,99.7% 73.0%,99.2% 77.4%,98.6% 81.0%,97.9% 84.1%,96.9% 86.7%,95.8% 89.1%,94.4% 91.1%,92.9% 92.9%,91.1% 94.4%,89.1% 95.8%,86.7% 96.9%,84.1% 97.9%,81.0% 98.6%,77.4% 99.2%,73.0% 99.7%,66.9% 99.9%,50.0% 100.0%,33.1% 99.9%,27.0% 99.7%,22.6% 99.2%,19.0% 98.6%,15.9% 97.9%,13.3% 96.9%,10.9% 95.8%,8.9% 94.4%,7.1% 92.9%,5.6% 91.1%,4.2% 89.1%,3.1% 86.7%,2.1% 84.1%,1.4% 81.0%,0.8% 77.4%,0.3% 73.0%,0.1% 66.9%,0.0% 50.0%,0.1% 33.1%,0.3% 27.0%,0.8% 22.6%,1.4% 19.0%,2.1% 15.9%,3.1% 13.3%,4.2% 10.9%,5.6% 8.9%,7.1% 7.1%,8.9% 5.6%,10.9% 4.2%,13.3% 3.1%,15.9% 2.1%,19.0% 1.4%,22.6% 0.8%,27.0% 0.3%,33.1% 0.1%,50.0% 0.0%,66.9% 0.1%,73.0% 0.3%,77.4% 0.8%,81.0% 1.4%,84.1% 2.1%,86.7% 3.1%,89.1% 4.2%,91.1% 5.6%,92.9% 7.1%,94.4% 8.9%,95.8% 10.9%,96.9% 13.3%,97.9% 15.9%,98.6% 19.0%,99.2% 22.6%,99.7% 27.0%,99.9% 33.1%);filter:drop-shadow(0 12px 26px rgba(20,23,26,.15)) drop-shadow(0 2px 6px rgba(20,23,26,.09))}.herofeat .sw svg{width:100%;height:100%}
+.herofeat .card{position:absolute;left:20px;bottom:20px;right:20px;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-radius:13px;padding:15px 20px 17px;box-shadow:var(--sh2)}
+.herofeat .card .ey2{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mut2);margin-bottom:6px}
+.herofeat .card .t{font-family:var(--disp);font-weight:700;font-size:24px;letter-spacing:-.03em;line-height:1.02;color:var(--ink)}
+.herofeat .card .s{font-size:12.5px;color:var(--mut);margin-top:6px}
+.herofeat .card .prow{display:flex;align-items:baseline;gap:7px;margin-top:12px}
+.herofeat .card .prow b{font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:-.01em;color:var(--ink)}
+.herofeat .card .prow span{font-size:12px;color:var(--mut)}
+.herofeat .badge{position:absolute;top:30px;left:38px;background:var(--ink);color:#fff;font-size:11px;font-weight:600;padding:6px 11px;border-radius:6px;letter-spacing:.02em}
+
+/* promo strip (email campaigns on-site) */
+.promos{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:14px;margin-top:30px}
+.pcard{border-radius:14px;padding:24px;position:relative;overflow:hidden;min-height:172px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid var(--line)}
+.pcard .k{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.pcard h3{font-family:var(--disp);font-weight:800;font-size:23px;line-height:1.04;margin:9px 0 6px;letter-spacing:-.022em;max-width:calc(100% - 28px)}
+.pcard p{font-size:13px;line-height:1.4;max-width:calc(100% - 88px)}
+.pcard .lk{font-size:12.5px;font-weight:700;margin-top:14px;display:inline-flex;align-items:center;gap:7px}
+.pcard .lk svg{width:13px;height:13px;stroke:currentColor;stroke-width:2.6;fill:none}
+.pcard.red{background:var(--red);color:#fff;grid-row:span 1}
+.pcard.red .k{color:rgba(255,255,255,.85)}.pcard.red p{color:rgba(255,255,255,.92)}
+.pcard.dark{background:var(--ink);color:#fff}.pcard.dark .k{color:#FF6671}.pcard.dark p{color:#B6BBC1}
+.pcard.lite{background:var(--surf);color:var(--ink)}.pcard.lite .k{color:var(--red)}.pcard.lite p{color:var(--mut)}
+.pcard .sw{position:absolute;right:-26px;bottom:-26px;width:130px;height:130px;border-radius:18px;overflow:hidden;opacity:.9;border:4px solid rgba(255,255,255,.25)}
+.pcard.lite .sw{border-color:#fff}
+.pcard .sw svg{width:100%;height:100%}
+
+/* trust */
+.trust{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:14px;margin-top:30px;background:var(--paper)}
+.trust .ti{display:flex;gap:14px;padding:20px 22px;border-right:1px solid var(--line)}
+.trust .ti:last-child{border-right:none}
+.trust .ic{width:30px;height:30px;flex:0 0 auto}.trust .ic svg{width:30px;height:30px;stroke:var(--red);fill:none;stroke-width:1.6}
+.trust h4{font-size:13.5px;font-weight:700}.trust p{font-size:12px;color:var(--mut);margin-top:3px;line-height:1.35}
+
+/* category tiles */
+.cattiles{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
+.ctile{border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:.16s;background:#fff}
+.ctile:hover{box-shadow:var(--sh2);transform:translateY(-3px);border-color:#D8D8D2}
+.ctile .sw{aspect-ratio:1/.82;overflow:hidden}.ctile .sw svg{width:100%;height:100%}
+.ctile .lb{padding:12px 13px}
+.ctile .nm{font-size:13px;font-weight:600;line-height:1.2}
+.ctile .ct{font-size:11px;color:var(--mut2);margin-top:3px}
+
+/* product cards */
+.rail{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden;display:flex;flex-direction:column;transition:.16s}
+.card:hover{box-shadow:var(--sh2);border-color:#D8D8D2}
+.card .imgw{position:relative;aspect-ratio:1/.6;overflow:hidden;cursor:pointer;background:var(--surf)}
+.card .imgw .sw{width:100%;height:100%}.card .imgw .sw svg{width:100%;height:100%}
+.card .flag{position:absolute;top:11px;left:11px;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;padding:4px 9px;border-radius:5px;backdrop-filter:blur(4px)}
+.flag.sale{background:var(--red);color:#fff}.flag.eco{background:var(--green);color:#fff}.flag.rec{background:rgba(21,23,26,.82);color:#fff}.flag.spec{background:rgba(21,23,26,.82);color:#fff}
+.card .b{padding:14px 15px 15px;display:flex;flex-direction:column;flex:1}
+.card .cat{font-size:10.5px;font-weight:700;color:var(--mut2);text-transform:uppercase;letter-spacing:.08em}
+.card .b{padding-top:15px}
+.card .nm{font-size:17px;font-weight:700;line-height:1.16;margin:6px 0 7px;cursor:pointer;min-height:40px;letter-spacing:-.025em;color:var(--ink)}
+.card .nm:hover{color:var(--red)}
+.card .meta{font-size:12px;color:var(--mut);line-height:1.4}
+.card .meta b{color:var(--ink2);font-weight:600}
+.card .stk{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;margin-top:10px}
+.stk.in{color:var(--green)}.stk.low{color:var(--amber)}.stk.spec{color:var(--mut)}
+.stk .d{width:7px;height:7px;border-radius:50%;background:currentColor}
+.card .foot{margin-top:auto;padding-top:12px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px}
+.price .from{font-size:10.5px;color:var(--mut);font-weight:500;display:block;margin-bottom:-1px}
+.price .p{font-family:var(--disp);font-weight:800;font-size:20px;letter-spacing:-.01em}
+.price .u{font-size:11px;color:var(--mut);font-weight:500}
+.price .q{font-family:var(--disp);font-weight:700;font-size:15px;color:var(--ink2)}
+.addbtn{display:flex;align-items:center;gap:7px;background:var(--ink);color:#fff;font-weight:600;font-size:12.5px;padding:9px 13px;border-radius:var(--rs);white-space:nowrap;transition:.13s}
+.addbtn:hover{background:var(--red)}.addbtn.q{background:#fff;color:var(--ink);border:1px solid var(--line)}.addbtn.q:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+.addbtn svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.2;fill:none}
+.addbtn.added{background:var(--green)!important;color:#fff!important}
+
+/* PLP */
+.plp{padding:26px 0 70px}
+.crumb{font-size:12.5px;color:var(--mut);margin-bottom:16px}
+.crumb a:hover{color:var(--red)}.crumb .sep{margin:0 8px;color:var(--mut2)}
+.plptop{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:8px}
+.plptop h1{font-family:var(--disp);font-weight:800;font-size:30px;letter-spacing:-.02em}
+.plpsub{font-size:14px;color:var(--mut);max-width:620px;margin-bottom:22px;line-height:1.5}
+.plpbody{display:grid;grid-template-columns:240px 1fr;gap:30px}
+.filters{align-self:start;position:sticky;top:142px}
+.fg{border-bottom:1px solid var(--line);padding:16px 0}.fg:first-child{padding-top:0}
+.fg h5{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.fo{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;color:var(--ink2);cursor:pointer}
+.fo input{width:16px;height:16px;accent-color:var(--red);cursor:pointer}
+.fo .ct{margin-left:auto;font-size:11.5px;color:var(--mut2)}
+.fo:hover{color:var(--red)}
+.clearf{font-size:12px;color:var(--red);font-weight:600;margin-top:15px;cursor:pointer}.clearf:hover{text-decoration:underline}
+.plpctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--surf2);color:var(--ink2);font-size:12px;font-weight:600;padding:6px 11px;border-radius:20px;cursor:pointer}
+.chip svg{width:11px;height:11px;stroke:currentColor;stroke-width:2.6;fill:none}.chip:hover{background:var(--redt);color:var(--redh)}
+.sortsel{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--mut);flex:0 0 auto}
+.sortsel select{font-family:var(--ui);font-size:13px;font-weight:600;color:var(--ink);border:1px solid var(--line);border-radius:var(--rs);padding:8px 11px;background:#fff;cursor:pointer}
+.empty{padding:70px;text-align:center;color:var(--mut);grid-column:1/-1}
+
+/* PDP */
+.pdp{padding:26px 0 80px}
+.pdpgrid{display:grid;grid-template-columns:1.15fr 1fr;gap:46px;align-items:start}
+.pdpmedia{position:sticky;top:142px}
+.pdpimg{border-radius:18px;overflow:hidden;aspect-ratio:1/.82;border:1px solid var(--line);box-shadow:var(--sh)}
+.pdpimg .sw{width:100%;height:100%}.pdpimg .sw svg{width:100%;height:100%}
+.pdpthumbs{display:flex;gap:10px;margin-top:12px}
+.pth{width:72px;height:60px;border-radius:9px;overflow:hidden;border:1px solid var(--line);cursor:pointer}
+.pth.on{border:2px solid var(--ink)}.pth .sw{width:100%;height:100%}
+.pdpinfo .cat{font-size:12px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.06em}
+.pdpinfo h1{font-family:var(--disp);font-weight:800;font-size:32px;line-height:1.1;letter-spacing:-.02em;margin:7px 0 10px}
+.pdpinfo .lead{font-size:15px;color:var(--ink2);line-height:1.6;margin-bottom:18px}
+.usefor{margin:18px 0}
+.usefor h4,.specwrap h4,.calc h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin-bottom:10px}
+.usefor ul{list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.usefor li{font-size:13px;font-weight:500;background:var(--surf);border:1px solid var(--line);border-radius:7px;padding:7px 12px;display:flex;align-items:center;gap:7px}
+.usefor li svg{width:14px;height:14px;stroke:var(--green);stroke-width:2.4;fill:none}
+.specrows{border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.specrows .r{display:grid;grid-template-columns:190px 1fr;font-size:13.5px;border-bottom:1px solid var(--line2)}
+.specrows .r:last-child{border-bottom:none}.specrows .r:nth-child(odd){background:var(--paper)}
+.specrows .k{padding:11px 15px;color:var(--mut);font-weight:500}.specrows .v{padding:11px 15px;font-weight:600}
+.datasheet{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;border:1px solid var(--line);border-radius:var(--rs);padding:11px 15px;margin-top:14px;transition:.13s}
+.datasheet:hover{border-color:var(--ink)}.datasheet svg{width:17px;height:17px;stroke:var(--red);stroke-width:1.8;fill:none}
+/* buy box */
+.buybox{border:1px solid var(--line);border-radius:16px;padding:22px;background:#fff;box-shadow:var(--sh)}
+.bb .pl{display:flex;align-items:baseline;gap:8px}
+.bb .from{font-size:12px;color:var(--mut)}
+.bb .p{font-family:var(--disp);font-weight:900;font-size:32px;letter-spacing:-.01em}
+.bb .u{font-size:13px;color:var(--mut);font-weight:500}
+.bb .pq{font-family:var(--disp);font-weight:800;font-size:22px}
+.bb .stk{margin:13px 0}
+.bb .zone{font-size:12px;color:var(--mut);margin-top:-6px;margin-bottom:8px}
+.tiers{border:1px solid var(--line);border-radius:10px;margin:15px 0;overflow:hidden}
+.tiers .th{background:var(--surf);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:8px 13px;display:flex;justify-content:space-between}
+.tiers .tr{display:flex;justify-content:space-between;padding:9px 13px;font-size:13px;border-top:1px solid var(--line2)}
+.tiers .tr b{font-weight:700}.tiers .tr .save{color:var(--green);font-weight:600;font-size:12px}
+/* calculator */
+.calc{border:1px solid var(--line);border-radius:12px;padding:16px;margin:15px 0;background:var(--paper)}
+.calc .row{display:flex;gap:9px;margin-bottom:10px}
+.calc .fieldlet{flex:1}
+.calc label{font-size:11px;color:var(--mut);font-weight:600;display:block;margin-bottom:4px}
+.calc input,.calc select{width:100%;height:38px;border:1px solid var(--line);border-radius:7px;padding:0 10px;font-family:var(--ui);font-size:14px;font-weight:600;outline:none;background:#fff}
+.calc input:focus{border-color:var(--ink)}
+.calc .seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;margin-bottom:10px}
+.calc .seg button{flex:1;height:34px;font-size:12.5px;font-weight:600;color:var(--mut);background:#fff}
+.calc .seg button.on{background:var(--ink);color:#fff}
+.calc .res{display:flex;align-items:center;justify-content:space-between;background:var(--ink);color:#fff;border-radius:9px;padding:12px 15px;margin-top:4px}
+.calc .res .big{font-family:var(--disp);font-weight:800;font-size:20px}
+.calc .res .sm{font-size:11.5px;color:#B6BBC1}
+.calc .res button{background:var(--red);color:#fff;font-weight:700;font-size:12.5px;padding:9px 13px;border-radius:7px}
+.calc .res button:hover{background:var(--redh)}
+.qtyrow{display:flex;align-items:center;gap:13px;margin:16px 0}
+.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.qty button{width:40px;height:44px;font-size:19px;color:var(--ink)}.qty button:hover{background:var(--surf)}
+.qty input{width:64px;height:44px;text-align:center;border:none;border-left:1px solid var(--line);border-right:1px solid var(--line);font-family:var(--ui);font-size:15px;font-weight:600;outline:none}
+.qtyrow .uom{font-size:13px;color:var(--mut)}
+.bigadd{width:100%;background:var(--red);color:#fff;font-weight:700;font-size:15px;padding:16px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:9px;transition:.13s}
+.bigadd:hover{background:var(--redh)}.bigadd svg{width:18px;height:18px;stroke:#fff;stroke-width:2.2;fill:none}
+.subadd{width:100%;background:#fff;border:1px solid var(--line);color:var(--ink);font-weight:600;font-size:13.5px;padding:12px;border-radius:10px;margin-top:10px}
+.subadd:hover{border-color:var(--ink)}
+.bbfeat{margin-top:17px;border-top:1px solid var(--line);padding-top:15px;display:flex;flex-direction:column;gap:10px}
+.bbfeat .f{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--ink2)}
+.bbfeat svg{width:16px;height:16px;stroke:var(--green);stroke-width:1.9;fill:none;flex:0 0 auto}
+.mixtable{margin-top:30px}
+
+/* drawer + modal */
+.scrim{position:fixed;inset:0;background:rgba(15,17,20,.5);opacity:0;pointer-events:none;transition:.25s;z-index:80}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:440px;max-width:92vw;background:#fff;z-index:90;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:var(--shl)}
+.drawer.on{transform:none}
+.dhead{display:flex;align-items:center;justify-content:space-between;padding:19px 22px;border-bottom:1px solid var(--line)}
+.dhead h3{font-family:var(--disp);font-weight:800;font-size:19px}
+.dx{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center}.dx:hover{background:var(--surf)}.dx svg{width:20px;height:20px;stroke:var(--ink);stroke-width:2;fill:none}
+.ditems{flex:1;overflow-y:auto;padding:6px 22px}
+.di{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line2)}
+.di .ti{width:64px;height:54px;border-radius:9px;overflow:hidden;flex:0 0 auto;border:1px solid var(--line)}
+.di .nm{font-size:13px;font-weight:600;line-height:1.3}.di .sk{font-size:11px;color:var(--mut2);margin:2px 0 8px}
+.di .row{display:flex;align-items:center;justify-content:space-between}
+.miniq{display:flex;align-items:center;border:1px solid var(--line);border-radius:7px}
+.miniq button{width:28px;height:28px;font-size:15px}.miniq span{width:34px;text-align:center;font-size:13px;font-weight:600;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:28px}
+.di .pp{font-weight:700;font-size:13.5px}
+.dempty{padding:70px 22px;text-align:center;color:var(--mut)}.dempty svg{width:44px;height:44px;stroke:var(--mut2);stroke-width:1.5;fill:none;margin:0 auto 12px}
+.dfoot{border-top:1px solid var(--line);padding:20px 22px}
+.dfoot .ln{display:flex;justify-content:space-between;font-size:13px;color:var(--mut);margin-bottom:7px}
+.dfoot .tot{display:flex;justify-content:space-between;font-size:18px;font-weight:800;font-family:var(--disp);margin:9px 0 15px}
+.dfoot .co{width:100%;background:var(--red);color:#fff;font-weight:700;font-size:15px;padding:15px;border-radius:10px}.dfoot .co:hover{background:var(--redh)}
+.dfoot .rq{width:100%;background:#fff;border:1px solid var(--line);font-weight:600;font-size:13.5px;padding:12px;border-radius:10px;margin-top:9px}
+.dfoot .note{font-size:11.5px;color:var(--mut2);text-align:center;margin-top:11px}
+
+/* quote modal */
+.modal{position:fixed;inset:0;z-index:95;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto}
+.modal.on{display:flex}
+.qbox{background:#fff;border-radius:18px;width:640px;max-width:100%;box-shadow:var(--shl);overflow:hidden;position:relative}
+.qhead{padding:24px 28px 0}
+.qhead .k{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red)}
+.qhead h2{font-family:var(--disp);font-weight:800;font-size:24px;margin:8px 0 4px;letter-spacing:-.01em}
+.qhead p{font-size:13.5px;color:var(--mut)}
+.qhead .qx{position:absolute;top:20px;right:20px;width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:var(--surf)}
+.qhead .qx:hover{background:var(--surf2)}.qhead .qx svg{width:18px;height:18px;stroke:var(--ink);stroke-width:2;fill:none}
+.qbody{padding:22px 28px 26px}
+.qprod{display:flex;gap:13px;align-items:center;background:var(--surf);border-radius:11px;padding:12px 14px;margin-bottom:20px}
+.qprod .ti{width:48px;height:42px;border-radius:8px;overflow:hidden;border:1px solid var(--line);flex:0 0 auto}
+.qprod .nm{font-weight:600;font-size:14px}.qprod .sk{font-size:11.5px;color:var(--mut)}
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column}.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.field label .req{color:var(--red)}
+.field input,.field select,.field textarea{height:42px;border:1px solid var(--line);border-radius:8px;padding:0 12px;font-family:var(--ui);font-size:14px;outline:none;background:#fff;color:var(--ink)}
+.field textarea{height:72px;padding:10px 12px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--ink)}
+.qseg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.qseg button{flex:1;height:42px;font-size:13.5px;font-weight:600;color:var(--mut);background:#fff}.qseg button.on{background:var(--ink);color:#fff}
+.qsubmit{width:100%;background:var(--red);color:#fff;font-weight:700;font-size:15px;padding:15px;border-radius:10px;margin-top:20px}.qsubmit:hover{background:var(--redh)}
+.qnote{font-size:11.5px;color:var(--mut2);text-align:center;margin-top:12px}
+.qsuccess{padding:50px 40px;text-align:center}
+.qsuccess .ic{width:64px;height:64px;border-radius:50%;background:var(--greent);display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.qsuccess .ic svg{width:32px;height:32px;stroke:var(--green);stroke-width:2.5;fill:none}
+.qsuccess h2{font-family:var(--disp);font-weight:800;font-size:23px;margin-bottom:8px}
+.qsuccess p{font-size:14px;color:var(--mut);max-width:380px;margin:0 auto 20px;line-height:1.5}
+.qsuccess button{background:var(--ink);color:#fff;font-weight:600;font-size:14px;padding:13px 26px;border-radius:9px}
+
+/* footer */
+footer.f{background:var(--ink);color:#9AA0A7;margin-top:60px;padding:54px 0 30px}
+footer.f .cols{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:34px}
+footer.f h5{color:#fff;font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;font-weight:700}
+footer.f a{display:block;font-size:13px;padding:4px 0;color:#9AA0A7}footer.f a:hover{color:#fff}
+footer.f .mk{font-family:var(--brand);font-size:18px;color:#fff;margin-bottom:13px;letter-spacing:.01em;-webkit-text-stroke:0.75px #fff;paint-order:stroke fill}footer.f .mk s{color:var(--red);-webkit-text-stroke:0.75px var(--red)}
+footer.f .ab{font-size:13px;line-height:1.65;max-width:290px}
+footer.f .bot{border-top:1px solid #2A2F37;margin-top:34px;padding-top:20px;font-size:12px;display:flex;justify-content:space-between;color:#6E747B}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(18px);background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;padding:14px 22px;border-radius:11px;box-shadow:var(--shl);display:flex;align-items:center;gap:11px;opacity:0;pointer-events:none;transition:.25s;z-index:100}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}.toast svg{width:18px;height:18px;stroke:#5BE08C;stroke-width:2.6;fill:none}
+svg{stroke-linecap:round;stroke-linejoin:round}
+/* product photo — hybrid overlay (illustration shows through if the photo can't load) */
+.imgw,.ctile .sw,.pdpimg,.pth{position:relative;overflow:hidden}
+.ph{position:absolute;inset:0;z-index:1;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.72) contrast(1.06) brightness(1.02);transition:transform .6s cubic-bezier(.22,.61,.36,1)}
+.card:hover .imgw .ph img,.ctile:hover .ph img{transform:scale(1.06)}
+.ph .phg{position:absolute;inset:0;background:linear-gradient(158deg,rgba(255,249,242,.1),rgba(26,22,20,.2) 82%);mix-blend-mode:soft-light;pointer-events:none}
+.ph .phn{position:absolute;inset:0;width:100%;height:100%;opacity:.4;mix-blend-mode:overlay;pointer-events:none}
+.ph .phv{position:absolute;inset:0;background:radial-gradient(120% 110% at 50% 36%,transparent 55%,rgba(0,0,0,.18));pointer-events:none}
+.card .flag{z-index:3}
+/* build your load */
+.loadcta{background:var(--ink);border-radius:16px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;color:#fff;cursor:pointer;transition:.2s}
+.loadcta:hover{box-shadow:var(--sh2)}
+.loadcta .k{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#FF6671;margin-bottom:9px}
+.loadcta h3{font-family:var(--disp);font-weight:800;font-size:25px;letter-spacing:-.02em;line-height:1.08}
+.loadcta p{font-size:14px;color:#B6BBC1;margin-top:8px;max-width:520px;line-height:1.45}
+.loadcta .go{background:var(--red);color:#fff;font-weight:700;font-size:14.5px;padding:14px 24px;border-radius:9px;display:inline-flex;align-items:center;gap:9px;white-space:nowrap;flex:0 0 auto}
+.loadcta .go:hover{background:var(--redh)}.loadcta .go svg{width:16px;height:16px;stroke:#fff;stroke-width:2.2;fill:none}
+.load{padding:24px 0 80px}
+.loadhd{max-width:640px;margin:8px 0 28px}
+.loadhd h1{font-family:var(--disp);font-weight:800;font-size:32px;letter-spacing:-.025em}
+.loadhd p{font-size:15px;color:var(--mut);margin-top:11px;line-height:1.55}
+.loadgrid{display:grid;grid-template-columns:1fr 400px;gap:36px;align-items:start}
+.step{margin-bottom:28px}
+.step .sl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.step .sl .n{width:21px;height:21px;border-radius:50%;background:var(--ink);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:var(--disp)}
+.jobs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.job{border:1px solid var(--line);border-radius:13px;padding:16px;cursor:pointer;transition:.15s;background:#fff;display:flex;flex-direction:column;gap:11px}
+.job:hover{border-color:#C9CED4;box-shadow:var(--sh)}
+.job.on{border:2px solid var(--ink);box-shadow:var(--sh2)}
+.job .ji svg{width:30px;height:30px;stroke:var(--red);fill:none;stroke-width:1.6}
+.job .jn{font-size:14.5px;font-weight:700;letter-spacing:-.015em;line-height:1.15}
+.job .jb{font-size:11.5px;color:var(--mut);line-height:1.35;margin-top:-4px}
+.dims{display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap}
+.dims .f{flex:1;min-width:130px}.dims label{font-size:12px;color:var(--mut);font-weight:600;display:block;margin-bottom:6px}
+.dims input{width:100%;height:48px;border:1px solid var(--line);border-radius:9px;padding:0 14px;font-family:var(--ui);font-size:16px;font-weight:600;outline:none}
+.dims input:focus{border-color:var(--ink)}
+.dims .area{font-size:13px;color:var(--mut);padding-bottom:14px;white-space:nowrap}.dims .area b{color:var(--ink);font-family:var(--disp);font-weight:700}
+.loadout{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--sh);position:sticky;top:142px;overflow:hidden}
+.loadout .oh{padding:17px 20px;border-bottom:1px solid var(--line)}
+.loadout .oh h3{font-family:var(--disp);font-weight:800;font-size:17px}.loadout .oh .jt{font-size:12px;color:var(--mut);margin-top:2px}
+.loadrows{padding:4px 20px}
+.lr{display:flex;gap:13px;padding:14px 0;border-bottom:1px solid var(--line2);align-items:center}.lr:last-child{border-bottom:none}
+.lr .ti{width:48px;height:40px;border-radius:8px;overflow:hidden;border:1px solid var(--line);flex:0 0 auto}.lr .ti .sw{width:100%;height:100%}
+.lr .nm{font-size:13.5px;font-weight:600;line-height:1.2;letter-spacing:-.01em}.lr .ly{font-size:11px;color:var(--mut2);margin-top:3px}
+.lr .qt{margin-left:auto;text-align:right;flex:0 0 auto;padding-left:10px}
+.lr .qt b{font-family:var(--disp);font-weight:700;font-size:15px;display:block}.lr .qt span{font-size:11px;color:var(--mut)}.lr .qt .q{color:var(--amber);font-weight:600}
+.loadempty{padding:60px 24px;text-align:center;color:var(--mut2);font-size:13.5px;line-height:1.5}
+.loadfoot{padding:18px 20px;border-top:1px solid var(--line);background:var(--paper)}
+.loadfoot .tot{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.loadfoot .tot .l{font-size:13px;color:var(--mut)}.loadfoot .tot .v{font-family:var(--disp);font-weight:800;font-size:23px}
+.loadfoot .sub{font-size:11.5px;color:var(--mut2);margin-bottom:15px}
+.loadfoot .ba{width:100%;background:var(--red);color:#fff;font-weight:700;font-size:15px;padding:15px;border-radius:10px}.loadfoot .ba:hover{background:var(--redh)}
+.loadfoot .bq{width:100%;background:#fff;border:1px solid var(--line);font-weight:600;font-size:13.5px;padding:12px;border-radius:10px;margin-top:9px}
+.loadnote{font-size:11px;color:var(--mut2);text-align:center;margin-top:12px;line-height:1.45}
+@media(max-width:1100px){.loadgrid{grid-template-columns:1fr}.loadout{position:static}.jobs{grid-template-columns:repeat(2,1fr)}.loadcta{flex-direction:column;align-items:flex-start}}
+/* the yard — trade account hub */
+.yard{padding:24px 0 80px}
+.ywelcome{display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;padding:24px 28px;background:var(--ink);color:#fff;border-radius:16px;margin-bottom:18px}
+.ywelcome .eyb{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#FF6671;margin-bottom:8px}
+.ywelcome h1{font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:-.02em;line-height:1.05}
+.ywelcome .sub{font-size:13px;color:#B6BBC1;margin-top:7px}
+.ywelcome .wr{display:flex;gap:10px;flex-wrap:wrap}
+.ychip{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:9px 14px;font-size:11px;color:#9AA0A7;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.ychip b{color:#fff;font-weight:700;display:block;font-size:13px;margin-top:3px;text-transform:none;letter-spacing:normal}
+.yquick{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:26px}
+.qtile{border:1px solid var(--line);border-radius:13px;background:#fff;padding:15px 16px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:13px}
+.qtile:hover{box-shadow:var(--sh2);border-color:#D8D8D2;transform:translateY(-2px)}
+.qtile .qi{width:40px;height:40px;border-radius:10px;background:var(--paper);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.qtile .qi svg{width:21px;height:21px;stroke:var(--red);fill:none;stroke-width:1.8}
+.qtile .ql{font-size:14px;font-weight:700;letter-spacing:-.01em}.qtile .qs{font-size:11.5px;color:var(--mut);margin-top:1px}
+.ygrid{display:grid;grid-template-columns:1fr 340px;gap:26px;align-items:start}
+.ysec{margin-bottom:28px}.ysec:last-child{margin-bottom:0}
+.ysh{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.ysh h2{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.01em}
+.ysh a{font-size:12.5px;font-weight:600;color:var(--red);cursor:pointer}
+.dlv{border:1px solid var(--line);border-radius:13px;background:#fff;padding:15px 18px;margin-bottom:11px;display:flex;gap:16px;align-items:center}
+.pill{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:5px 10px;border-radius:20px;white-space:nowrap}
+.pill.enroute{background:#FFF0E6;color:#B9560C}.pill.scheduled{background:#EEF1F4;color:#5B6470}.pill.delivered{background:#E7F6EC;color:#1B7A3D}
+.dlv .dmid{flex:1;min-width:0}.dlv .dmid .dt{font-size:14px;font-weight:700;letter-spacing:-.01em}.dlv .dmid .ds{font-size:12.5px;color:var(--mut);margin-top:3px}
+.dlv .dmid .deta{font-size:12.5px;color:var(--ink);font-weight:600;margin-top:6px}.dlv .dmid .deta b{color:var(--red)}
+.dlv .dact{display:flex;flex-direction:column;gap:7px;flex:0 0 auto}
+.dlv .dact button{font-size:12px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;white-space:nowrap}
+.dlv .dact .pri{background:var(--ink);color:#fff;border-color:var(--ink)}.dlv .dact .pri:hover{background:#000}
+.ordrow{display:grid;grid-template-columns:130px 1fr auto auto;gap:18px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line2)}
+.ordrow:last-child{border-bottom:none}
+.ordrow .oid{font-family:var(--disp);font-weight:700;font-size:13px}.ordrow .od{font-size:11.5px;color:var(--mut2);margin-top:2px}
+.ordrow .oit{font-size:13px;color:var(--mut)}
+.ordrow .ot{font-family:var(--disp);font-weight:700;font-size:14px;text-align:right;white-space:nowrap}
+.ordrow .oact{display:flex;gap:7px}
+.ordrow .oact button{font-size:11.5px;font-weight:600;padding:7px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer;white-space:nowrap}
+.ordrow .oact button:hover{border-color:var(--ink)}
+.ycard{border:1px solid var(--line);border-radius:14px;background:#fff;padding:18px;margin-bottom:14px}
+.ycard h3{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin-bottom:13px}
+.repc{display:flex;gap:13px;align-items:center}
+.repc .av{width:46px;height:46px;border-radius:50%;background:var(--red);color:#fff;font-family:var(--disp);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.repc .rn{font-size:15px;font-weight:700;letter-spacing:-.01em}.repc .rt{font-size:12px;color:var(--mut);margin-top:1px}
+.repc2{margin-top:14px;display:flex;flex-direction:column;gap:9px}.repc2 a{font-size:13px;color:var(--ink);font-weight:600;display:flex;align-items:center;gap:9px;text-decoration:none}
+.repc2 svg{width:15px;height:15px;stroke:var(--red);fill:none;stroke-width:1.8;flex:0 0 auto}
+.meter{height:8px;border-radius:6px;background:var(--surf);overflow:hidden;margin:11px 0 9px}.meter span{display:block;height:100%;background:var(--green);border-radius:6px}
+.statbig{font-family:var(--disp);font-weight:800;font-size:25px;letter-spacing:-.02em}.statsub{font-size:12px;color:var(--mut);margin-top:3px}
+.sitelist .st,.joblist .jb2{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line2)}
+.sitelist .st:last-child,.joblist .jb2:last-child{border-bottom:none}
+.sitelist .sn{font-size:13px;font-weight:600}.sitelist .stag{font-size:10px;color:var(--mut2);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.joblist .jn2{font-size:13px;font-weight:600}.joblist .jm{font-size:11.5px;color:var(--mut2);margin-top:1px}
+.joblist .jb2 button{font-size:11.5px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;white-space:nowrap}
+@media(max-width:1000px){.ygrid{grid-template-columns:1fr}.yquick{grid-template-columns:repeat(2,1fr)}}
+
+@media(max-width:1100px){.herogrid{grid-template-columns:1fr}.hero h1{font-size:34px;-webkit-text-stroke:1.7px var(--ink)}.promos{grid-template-columns:1fr}.cattiles{grid-template-columns:repeat(3,1fr)}.rail{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:repeat(3,1fr)}.trust{grid-template-columns:repeat(2,1fr)}.pdpgrid{grid-template-columns:1fr}.pdpmedia{position:static}.plpbody{grid-template-columns:1fr}.filters{position:static}.qgrid{grid-template-columns:1fr}}
+
+/* mobile filter toggle */
+.ffbtn{display:none;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-weight:700;font-size:14px;background:#fff;cursor:pointer;margin-bottom:8px}
+.ffbtn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none}
+@media(max-width:1100px){.ffbtn{display:flex}.plpbody .filters{max-height:0;overflow:hidden;padding:0;transition:max-height .35s ease}.plpbody.filt-open .filters{max-height:2600px}}
+
+/* phone */
+@media(max-width:720px){
+ .wrap{padding:0 16px}
+ .util{display:none}
+ .hd{height:auto;gap:12px;padding:12px 0;flex-wrap:wrap}
+ .logo .mark{font-size:18px}.logo .by{font-size:8.5px;padding-left:9px}
+ .search{order:3;flex:1 0 100%}.search input{height:44px;font-size:14px}.search .go{height:32px;top:6px}
+ .acts{margin-left:auto;gap:0}.ib{padding:6px 8px;font-size:10px;gap:2px}.ib svg{width:20px;height:20px}
+ nav.cat .wrap{overflow-x:auto;height:46px;scrollbar-width:none}nav.cat .wrap::-webkit-scrollbar{display:none}
+ .navi{padding:0 12px;height:46px;font-size:13px}.navsp,.navi.m{display:none}
+ .block{padding:30px 0 0}
+ .hero{padding:22px 0 4px}.herogrid{gap:22px}.hero h1{font-size:29px;-webkit-text-stroke:1.5px var(--ink);margin-bottom:15px}.hero p.l{font-size:15px;margin-bottom:18px}.hero .ey{margin-bottom:12px}.hero .seg{flex-wrap:wrap}
+ .shead{margin-bottom:16px}.shead h2{font-size:20px}
+ .grid,.rail{grid-template-columns:repeat(2,1fr);gap:12px}
+ .cattiles{grid-template-columns:repeat(2,1fr);gap:10px}
+ .trust{grid-template-columns:1fr}.trust .ti{border-right:none;border-bottom:1px solid var(--line)}.trust .ti:last-child{border-bottom:none}
+ .pcard{min-height:150px}
+ .plp{padding:18px 0 60px}.plptop{flex-direction:column;align-items:flex-start;gap:3px}.plptop h1{font-size:24px}
+ .pdp{padding:18px 0 60px}.pdpinfo h1{font-size:25px}.pdpthumbs .pth{width:60px;height:50px}
+ .modal{padding:16px 10px}.qbody,.qhead{padding-left:18px;padding-right:18px}
+ .drawer{width:100vw;max-width:100vw}
+ .ywelcome{padding:20px 18px}.ywelcome h1{font-size:21px}
+ .ordrow{grid-template-columns:1fr auto;gap:5px 12px}
+ .dlv{flex-wrap:wrap}.dlv .dact{flex-direction:row;width:100%;margin-top:4px}.dlv .dact button{flex:1}
+ .statbig{font-size:22px}
+ .loadhd h1{font-size:24px}.jobs{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:430px){.hero h1{font-size:25px;-webkit-text-stroke:1.2px var(--ink)}.yquick{grid-template-columns:1fr}.logo .by{display:none}.grid,.rail,.cattiles{gap:9px}}
+
+/* micro-interactions */
+header.main{transition:box-shadow .3s ease}
+header.main.scrolled{box-shadow:0 5px 22px rgba(20,23,26,.07)}
+.navi,.ib,.ctile,.card,.addbtn,.bigadd,.subadd,.chip,.fo,.seg a,.datasheet{transition:all .2s cubic-bezier(.22,.61,.36,1)}
+@media(prefers-reduced-motion:no-preference){
+ .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s cubic-bezier(.22,.61,.36,1),transform .65s cubic-bezier(.22,.61,.36,1)}
+ .reveal.in{opacity:1;transform:none}
+ .card .imgw .sw,.ctile .sw svg,.herofeat>.sw{transition:transform .6s cubic-bezier(.22,.61,.36,1)}
+ .card:hover .imgw .sw{transform:scale(1.07)}
+ .ctile:hover .sw svg{transform:scale(1.06)}
+ .herofeat:hover>.sw{transform:scale(1.04)}
+ .addbtn:active,.bigadd:active,.subadd:active,.qsubmit:active,.dfoot .co:active{transform:scale(.96)}
+ .ib .badge.bump{animation:bump .55s cubic-bezier(.22,.61,.36,1)}
+ @keyframes bump{0%{transform:scale(1)}30%{transform:scale(1.45)}100%{transform:scale(1)}}
+ .hero .ey{animation:rise .7s both cubic-bezier(.22,.61,.36,1)}
+ .hero h1{animation:rise .8s .07s both cubic-bezier(.22,.61,.36,1)}
+ .hero p.l{animation:rise .8s .15s both cubic-bezier(.22,.61,.36,1)}
+ .hero .seg{animation:rise .8s .23s both cubic-bezier(.22,.61,.36,1)}
+ .herofeat{animation:rise .95s .14s both cubic-bezier(.22,.61,.36,1)}
+ @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+ .qbox{animation:pop .34s cubic-bezier(.22,.61,.36,1)}
+ @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+ .calc .res .big{transition:transform .28s cubic-bezier(.22,.61,.36,1)}
+ .calc .res.flash .big{transform:scale(1.08)}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<filter id="mslGrain"><feTurbulence type="fractalNoise" baseFrequency="0.82" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter>
+<radialGradient id="mslVig" cx="0.5" cy="0.38" r="0.8"><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.17"/></radialGradient>
+</defs></svg>
+<div class="ribbon">PROTOTYPE · <b>MSL — Tomlinson Materials storefront concept</b> · by <a href="https://sitepartners.ca/" target="_blank" rel="noopener" class="r">Site.</a> · sample data, not a live store</div>
+
+<div class="util"><div class="wrap">
+  <div class="l"><span><span class="dot"></span>25 pits &amp; quarries · Ottawa · Kemptville · Brechin · Napanee</span><a href="#">Find a yard</a><a href="#">Delivery &amp; will-call</a></div>
+  <div class="r"><span>CCIL-certified · GPS-tracked delivery</span><a href="#">1-613-690-3311</a><a href="#"><b class="acct">Trade account login →</b></a></div>
+</div></div>
+
+<header class="main"><div class="wrap hd">
+  <div class="logo" onclick="go('home')"><img class="brandlogo" src="data:image/png;base64,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" alt="Tomlinson Materials"></div>
+  <div class="search">
+    <svg class="mag" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg>
+    <input id="q" placeholder="Search materials, specs (e.g. Granular A, 19mm clear, HL3)…" autocomplete="off" aria-label="Search products"/>
+    <button class="go" onclick="runSearch()">Search</button>
+    <div class="suggest" id="suggest"></div>
+  </div>
+  <div class="acts">
+    <button class="ib" onclick="go('yard')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Account</button>
+    <button class="ib" onclick="go('plp',{list:'reorder',title:'Buy again'})"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>Reorder</button>
+    <button class="ib" onclick="openCart()" style="position:relative" aria-label="Open order"><span class="badge" id="cbadge" style="display:none">0</span><svg viewBox="0 0 24 24"><path d="M6 6h15l-1.6 9h-12z"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M6 6 5 3H2"/></svg>Order</button>
+  </div>
+</div></header>
+
+<nav class="cat"><div class="wrap">
+  <button class="navi all" onclick="go('plp',{title:'All materials'})"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16"/></svg>All materials</button>
+  <span id="catnav" style="display:flex;align-items:center;margin-left:16px"></span>
+  <span class="navsp"></span>
+  <a class="navi m" href="#" onclick="go('load');return false">Calculators</a><a class="navi m" href="#">Spec sheets</a><a class="navi m" style="color:var(--red);font-weight:700" href="#">Bulk pricing</a>
+</div></nav>
+
+<div class="view on" id="view-home"><div class="wrap">
+  <div class="hero"><div class="herogrid">
+    <div>
+      <div class="ey">25 pits &amp; quarries · delivered across Eastern Ontario</div>
+      <h1>Everything<br>the job needs.</h1>
+      <p class="l">Aggregates, asphalt, ready-mix concrete and more — spec’d, priced and delivered from 25 pits and quarries across Eastern Ontario.</p>
+      <div class="seg"><a class="on" href="#">Contractors</a><a href="#">Municipal</a><a href="#">Landscapers</a><a href="#">Homeowners</a></div>
+    </div>
+    <div class="herofeat" id="herofeat"></div>
+  </div></div>
+
+  <div class="promos" id="promos"></div>
+  <div class="trust" id="trust"></div>
+
+  <div class="block"><div class="loadcta" onclick="go('load')">
+    <div><div class="k">New · Order by the number</div><h3>Not sure how much you need?</h3><p>Tell us the job — driveway, drainage, patio base — and we’ll build your full materials list with the exact tonnage, ready to order or quote.</p></div>
+    <button class="go" onclick="event.stopPropagation();go('load')">Build your load <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </div></div>
+
+  <div class="block"><div class="shead"><h2 class="tick">Shop by material</h2><a class="lk" href="#" onclick="go('plp',{title:'All materials'});return false">All materials <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+    <div class="cattiles" id="cattiles"></div></div>
+
+  <div class="block"><div class="shead"><h2 class="tick">Buy again</h2><a class="lk" href="#" onclick="go('plp',{list:'reorder',title:'Buy again'});return false">Order history <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+    <div class="rail" id="reorder"></div></div>
+
+  <div class="block"><div class="shead"><h2 class="tick">Most ordered this season</h2><a class="lk" href="#" onclick="go('plp',{title:'All materials'});return false">View all <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div>
+    <div class="grid" id="popular"></div></div>
+</div></div>
+
+<div class="view" id="view-plp"><div class="wrap plp">
+  <div class="crumb"><a href="#" onclick="go('home');return false">Home</a><span class="sep">/</span><span id="plpcrumb">All materials</span></div>
+  <div class="plptop"><h1 id="plptitle">All materials</h1><div class="meta" style="font-size:13px;color:var(--mut)"><span id="plpcount">0</span> products</div></div>
+  <p class="plpsub" id="plpsub"></p>
+  <div class="plpbody"><button class="ffbtn" onclick="this.closest('.plpbody').classList.toggle('filt-open')"><svg viewBox="0 0 24 24"><path d="M3 5h18M6 12h12M10 19h4"/></svg>Filter &amp; sort</button><aside class="filters" id="filters"></aside>
+    <div><div class="plpctrl"><div class="chips" id="chips"></div>
+      <div class="sortsel">Sort<select id="sort" onchange="renderGrid()"><option value="rel">Relevance</option><option value="plo">Price: low to high</option><option value="phi">Price: high to low</option><option value="az">Name: A–Z</option></select></div></div>
+      <div class="grid" id="plpgrid"></div></div></div>
+</div></div>
+
+<div class="view" id="view-pdp"><div class="wrap pdp" id="pdpwrap"></div></div>
+
+<div class="view" id="view-load"><div class="wrap load" id="loadwrap"></div></div>
+
+<div class="view" id="view-yard"><div class="wrap" id="yardwrap"></div></div>
+
+<div class="scrim" id="scrim" onclick="closeCart()"></div>
+<aside class="drawer" id="drawer" aria-label="Your order">
+  <div class="dhead"><h3>Your order</h3><button class="dx" onclick="closeCart()" aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <div class="ditems" id="ditems"></div><div class="dfoot" id="dfoot"></div>
+</aside>
+
+<div class="modal" id="modal"><div class="qbox" id="qbox"></div></div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg><span id="toasttext">Added to order</span></div>
+
+<footer class="f"><div class="wrap">
+  <div class="cols">
+    <div><div class="mk">MSL<s>.</s></div><p class="ab">Tomlinson Materials Supply. Aggregates, asphalt, concrete and more — from 25 pits and quarries across Eastern Ontario. Spec’d right, on time, on site.</p></div>
+    <div><h5>Materials</h5><a href="#">Aggregates</a><a href="#">Asphalt</a><a href="#">Ready-mix concrete</a><a href="#">Ontario Trap Rock</a><a href="#">Winter &amp; de-icing</a></div>
+    <div><h5>Trade</h5><a href="#">Open an account</a><a href="#">Delivery &amp; will-call</a><a href="#">Calculators</a><a href="#">Spec sheets &amp; SDS</a></div>
+    <div><h5>Support</h5><a href="#">Request a quote</a><a href="#">Order status &amp; e-tickets</a><a href="#">Quality &amp; certifications</a><a href="#">1-613-690-3311</a></div>
+  </div>
+  <div class="bot"><span>© 2026 MSL · A Tomlinson Company · CCIL-certified</span><span>Prototype concept — Site.</span></div>
+</div></footer>
+
+<script>
+/* ---------- seeded material textures ---------- */
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const SW={
+ granA:{bg:'#B6AF9E',c:['#A49B86','#C6BEA9','#8E8472','#D4CCB6'],n:150,mn:1.4,mx:5.5,ang:1},
+ granB:{bg:'#ADA690',c:['#9B927B','#BEB59C','#857B64'],n:130,mn:1.6,mx:6.5,ang:1},
+ clear:{bg:'#C9C6BC',c:['#B7B3A6','#D8D5CB','#A8A394','#E2DFD4'],n:46,mn:6,mx:13,ang:1},
+ clearS:{bg:'#CBC8BE',c:['#BAB6A9','#DAD7CD','#ABA697'],n:90,mn:3,mx:6.5,ang:1},
+ sand:{bg:'#D7C9A2',c:['#CDBE96','#E3D7B4','#C0AF83','#EADFC2'],n:430,mn:.7,mx:1.9,ang:0},
+ screen:{bg:'#B9B2A1',c:['#A89F8A','#C9C2AE','#928974'],n:300,mn:.8,mx:2.6,ang:0},
+ asphalt:{bg:'#2D2E30',c:['#242527','#3C3E41','#535860','#1C1D1F'],n:120,mn:1.5,mx:5,ang:1},
+ concrete:{bg:'#BCBEC0',c:['#ACAEB0','#CDCFD1','#9A9C9E','#878482'],n:170,mn:.8,mx:3.4,ang:0},
+ salt:{bg:'#E7EAEC',c:['#FFFFFF','#D7DCE0','#F2F5F7','#C8CED3'],n:80,mn:3.5,mx:8,ang:1},
+ saltm:{bg:'#CFC9BE',c:['#E9ECEE','#B6AE9C','#A89D86','#DFE2E4'],n:170,mn:1.6,mx:4,ang:1},
+ trap:{bg:'#383C43',c:['#2C3038','#474D57','#565D68','#22262C'],n:62,mn:6,mx:12,ang:1},
+ river:{bg:'#BAB7AE',c:['#A8A497','#C8C5BB','#9B8D79','#B58A6B','#8C9099'],n:26,mn:9,mx:17,round:1},
+ topsoil:{bg:'#42342A',c:['#362A21','#4D3C2F','#5A4636','#2C2118'],n:380,mn:.8,mx:2.1,ang:0},
+ mulch:{bg:'#5C4027',c:['#48311E','#6C4C2F','#3A2818','#7A573A'],strand:1,n:90,mn:2.5,mx:7},
+ rca:{bg:'#ABA69B',c:['#9A9489','#C7C3B9','#C98B86','#8E938F','#D8AEA9'],n:80,mn:2,mx:7,ang:1},
+ lime:{bg:'#DFDDD4',c:['#D4D2C8','#ECEAE1','#C9C7BD'],n:500,mn:.5,mx:1.4,ang:0},
+ limestone:{bg:'#C4C0B4',c:['#B3AE9F','#D6D2C6','#A29C8B','#E0DCD0'],n:70,mn:4,mx:11,ang:1},
+};
+function shade(h,a){h=h.replace('#','');const f=i=>Math.max(0,Math.min(255,parseInt(h.substr(i,2),16)+a)).toString(16).padStart(2,'0');return '#'+f(0)+f(2)+f(4);}
+function swatch(t,seed){const c=SW[t]||SW.granA,r=rng(seed*97+31),gid='msg'+seed,lite=shade(c.bg,24),dark=shade(c.bg,-20);
+ let s=`<svg class="sw" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="${lite}"/><stop offset="0.5" stop-color="${c.bg}"/><stop offset="1" stop-color="${dark}"/></linearGradient></defs><rect width="100" height="100" fill="url(#${gid})"/>`;
+ const n=c.n||120;
+ for(let i=0;i<n;i++){const x=(r()*104-2).toFixed(1),y=(r()*104-2).toFixed(1),sz=c.mn+r()*(c.mx-c.mn),col=c.c[(r()*c.c.length)|0],op=(.72+r()*.26).toFixed(2);
+  if(c.strand){const w=(sz*.45).toFixed(1),h=(sz*2.6).toFixed(1),rot=(r()*360).toFixed(0);s+=`<rect x="${x}" y="${y}" width="${h}" height="${w}" rx="${w/2}" fill="${col}" opacity="${op}" transform="rotate(${rot} ${x} ${y})"/>`;}
+  else if(c.round){s+=`<circle cx="${x}" cy="${y}" r="${(sz/2).toFixed(1)}" fill="${col}" opacity="${op}"/>`;}
+  else if(c.ang){const k=3+((r()*3)|0),pts=[];for(let j=0;j<k;j++){const a=(j/k)*6.283+r()*1.1,rr=sz/2*(.62+r()*.62);pts.push(`${(x*1+Math.cos(a)*rr).toFixed(1)},${(y*1+Math.sin(a)*rr).toFixed(1)}`);}s+=`<polygon points="${pts.join(' ')}" fill="${col}" opacity="${op}"/>`;}
+  else{s+=`<circle cx="${x}" cy="${y}" r="${(sz/2).toFixed(1)}" fill="${col}" opacity="${op}"/>`;}}
+ s+=`<rect width="100" height="100" filter="url(#mslGrain)" opacity="0.4" style="mix-blend-mode:overlay"/><rect width="100" height="100" fill="url(#mslVig)"/>`;
+ return s+'</svg>';}
+
+/* ---------- categories ---------- */
+const CATS=[
+ {id:'agg',name:'Aggregates',sw:'granA',blurb:'Crushed stone, gravel, sand and granular — natural, manufactured and recycled, from 25 pits and quarries.'},
+ {id:'asph',name:'Asphalt',sw:'asphalt',blurb:'Over 50 hot-mix designs, from driveway mix to Superpave and SMA. CCIL-certified, by the tonne.'},
+ {id:'conc',name:'Ready-Mix Concrete',sw:'concrete',blurb:'Residential to commercial mix classes by strength, plus E-Line Enviro low-carbon and specialty mixes.'},
+ {id:'trap',name:'Ontario Trap Rock',sw:'trap',blurb:'Premium high-friction, skid-resistant igneous aggregate for surface-course asphalt.'},
+ {id:'winter',name:'Winter & De-Icing',sw:'salt',blurb:'Bulk road salt, treated salt and winter sand. Lock in tonnage before the season.'},
+ {id:'land',name:'Landscape & Decorative',sw:'river',blurb:'Riverstone, decorative stone, screened topsoil and mulch — by the yard or tonne.'},
+ {id:'lime',name:'Agricultural Lime',sw:'lime',blurb:'Aglime and pelletized lime for soil pH and conditioning, by the tonne.'},
+];
+const CN=Object.fromEntries(CATS.map(c=>[c.id,c.name]));
+
+/* ---------- products (real Tomlinson lines) ---------- */
+let U=2000;
+function P(o){o.id=++U;return o;}
+const PRODUCTS=[
+ // AGGREGATES
+ P({n:'Granular A',c:'agg',sw:'granA',u:'tonne',p:16.50,o:'cart',den:2.20,std:'OPSS.PROV 1010',sz:'26.5 mm minus, well-graded',use:['Road & driveway base','Under asphalt','Under concrete slab','Compacted sub-base'],desc:'The workhorse base material. A dense-graded crushed stone that compacts to a tight, load-bearing base under asphalt, concrete and interlock. Produced and tested daily to OPSS.PROV 1010.',st:'in',fl:'',pop:1,tr:[[1,16.50],[20,15.25],[100,13.95]],src:'Quarry'}),
+ P({n:'Granular B Type II',c:'agg',sw:'granB',u:'tonne',p:13.75,o:'cart',den:2.10,std:'OPSS.PROV 1010',sz:'106 mm minus, crushed',use:['Deep sub-base','Fill & lifts','Soft-ground stabilization'],desc:'A coarse sub-base for building up grade and stabilizing soft ground beneath a Granular A base. Economical structural fill that drains and compacts well.',st:'in',fl:'',pop:0,tr:[[1,13.75],[20,12.50],[100,11.25]],src:'Quarry'}),
+ P({n:'19 mm Clear Stone',c:'agg',sw:'clear',u:'tonne',p:34.00,o:'cart',den:1.55,std:'Washed, no fines',sz:'5–20 mm, angular',use:['Drainage','Weeping tile','Under-slab','Septic beds'],desc:'Washed, fractured ¾" stone with no fines — water moves straight through. The default for foundation drainage, weeping tile surround and under-slab base.',st:'in',fl:'',pop:1,tr:[[1,34.00],[20,31.50],[100,28.95]],src:'Quarry'}),
+ P({n:'50 mm Clear Stone (2")',c:'agg',sw:'clear',u:'tonne',p:31.00,o:'cart',den:1.50,std:'Washed, no fines',sz:'20–50 mm, angular',use:['Mud mat / site access','Heavy drainage','Erosion armour'],desc:'Large washed clear stone for temporary site-access mud mats, heavy drainage and erosion control where bigger stone holds the grade.',st:'in',fl:'',pop:0,tr:[[1,31.00],[20,28.75],[100,26.50]],src:'Quarry'}),
+ P({n:'HPB — High Performance Bedding (7 mm)',c:'agg',sw:'clearS',u:'tonne',p:42.00,o:'cart',den:1.70,std:'Washed clear chip',sz:'7 mm clear',use:['Pipe bedding','Interlock base','Setting bed'],desc:'Clean 7 mm clear chip that beds and screeds easily without compaction — the standard bedding for pipe, and a stable base layer for interlock and slabs.',st:'in',fl:'',pop:1,tr:[[1,42.00],[20,39.00],[100,35.95]],src:'Quarry'}),
+ P({n:'⅝" Crusher Run (Granular)',c:'agg',sw:'granA',u:'tonne',p:18.00,o:'cart',den:2.15,std:'Crushed, with fines',sz:'16 mm minus',use:['Driveways','Pathways','Compacted base'],desc:'Crushed stone with fines that binds and compacts into a hard driveway or pathway surface. A budget base where a smaller top size is preferred.',st:'in',fl:'',pop:0,tr:[[1,18.00],[20,16.75],[100,15.25]],src:'Quarry'}),
+ P({n:'Concrete Sand',c:'agg',sw:'sand',u:'tonne',p:22.50,o:'cart',den:1.60,std:'CSA A23.1 fine agg.',sz:'Fine, washed',use:['Ready-mix & precast','Pipe bedding','Paver base'],desc:'Washed, well-graded fine aggregate meeting CSA A23.1 for concrete production, plus pipe bedding and a base under pavers.',st:'in',fl:'',pop:0,tr:[[1,22.50],[20,20.95],[100,18.95]],src:'Sand & gravel'}),
+ P({n:'Mason / Bedding Sand',c:'agg',sw:'sand',u:'tonne',p:26.00,o:'cart',den:1.55,std:'Fine, screened',sz:'Fine, uniform',use:['Masonry mortar','Paver joint & bed','Sandbox'],desc:'A clean, fine screened sand for masonry mortar, paver bedding and joints. Consistent gradation for a smooth, level setting bed.',st:'low',fl:'',pop:0,tr:[[1,26.00],[20,24.00]],src:'Sand & gravel'}),
+ P({n:'Stone Dust / Screenings',c:'agg',sw:'screen',u:'tonne',p:24.00,o:'cart',den:1.70,std:'Crusher fines',sz:'6 mm minus',use:['Interlock setting bed','Flagstone base','Pathways'],desc:'Fine crusher screenings that screed flat and lock up firm — the traditional setting bed under interlock pavers and flagstone.',st:'in',fl:'',pop:1,tr:[[1,24.00],[20,22.25],[100,20.25]],src:'Quarry'}),
+ P({n:'Riverstone 20–40 mm',c:'agg',sw:'river',u:'tonne',p:58.00,o:'cart',den:1.60,std:'Natural, rounded',sz:'20–40 mm',use:['Decorative beds','Drainage swales','Dry creek beds'],desc:'Smooth, naturally rounded river rock in mixed earth tones — equally at home in a decorative bed or a functioning drainage swale.',st:'in',fl:'',pop:0,tr:[[1,58.00],[10,54.00]],src:'Sand & gravel'}),
+ P({n:'Recycled Crushed Concrete (RCA)',c:'agg',sw:'rca',u:'tonne',p:12.00,o:'cart',den:1.90,std:'OPSS-approved recycled',sz:'Granular, with fines',use:['Granular base','Fill','Site access'],desc:'Crushed, screened recycled concrete that meets City of Ottawa and Provincial granular specs — the same performance as virgin granular at a lower price and a lower footprint. Part of ~100,000 tonnes diverted from landfill each year.',st:'in',fl:'rec',pop:1,tr:[[1,12.00],[20,10.95],[100,9.75]],src:'Recycled'}),
+ P({n:'Recycled Asphalt (RAP)',c:'agg',sw:'asphalt',u:'tonne',p:14.00,o:'cart',den:1.80,std:'Reclaimed asphalt',sz:'Granular',use:['Driveways','Laneways','Compacted base'],desc:'Reclaimed, crushed asphalt that re-compacts into an economical, dust-free driveway or laneway surface that firms up in the sun.',st:'in',fl:'rec',pop:0,tr:[[1,14.00],[20,12.95],[100,11.50]],src:'Recycled'}),
+ // ASPHALT (quote)
+ P({n:'HL3 Surface Mix',c:'asph',sw:'asphalt',u:'tonne',p:null,o:'quote',den:2.40,std:'OPSS / Marshall',sz:'Surface course',use:['Driveways','Parking lots','Top lift / surface'],desc:'The standard Marshall-designed surface course for driveways and lots — a fine, dense top lift that finishes smooth and tight. PG58-34 binder, produced and tested to OPSS.',st:'in',fl:'',pop:1,src:'Plant',attrs:{'Mix type':'HL3 surface','Binder grade':'PG 58-34','Design':'Marshall','Top size':'13.2 mm'}}),
+ P({n:'HL8 Binder Mix',c:'asph',sw:'asphalt',u:'tonne',p:null,o:'quote',den:2.40,std:'OPSS / Marshall',sz:'Binder course',use:['Base / binder lift','Heavy loads','Under HL3'],desc:'A coarser binder-course lift placed beneath an HL3 surface to carry structural load. The strength layer of a two-lift pavement.',st:'in',fl:'',pop:0,src:'Plant',attrs:{'Mix type':'HL8 binder','Binder grade':'PG 58-34','Design':'Marshall','Top size':'19 mm'}}),
+ P({n:'Superpave SP12.5 FC1',c:'asph',sw:'asphalt',u:'tonne',p:null,o:'quote',den:2.41,std:'OPSS Superpave',sz:'Surface course',use:['Municipal roads','Collector roads','Surface course'],desc:'Gyratory-designed Superpave surface mix engineered for traffic and climate — the modern surface course for municipal and collector roads.',st:'in',fl:'',pop:0,src:'Plant',attrs:{'Mix type':'SP 12.5 FC1','Design':'Superpave gyratory','Traffic':'FC1','Top size':'12.5 mm'}}),
+ P({n:'Driveway Mix',c:'asph',sw:'asphalt',u:'tonne',p:null,o:'quote',den:2.38,std:'Residential',sz:'Surface course',use:['Residential driveways','Pathways','Small lots'],desc:'A workable, fine residential surface mix that lays and finishes beautifully by hand — built for driveways and pathways.',st:'in',fl:'',pop:1,src:'Plant',attrs:{'Mix type':'Driveway / residential','Design':'Marshall','Top size':'9.5 mm'}}),
+ P({n:'FC2 Friction Course',c:'asph',sw:'asphalt',u:'tonne',p:null,o:'quote',den:2.42,std:'OPSS FC2',sz:'High-friction surface',use:['High-speed roads','High-skid demand','Provincial surface'],desc:'A high-friction surface course — often produced with Ontario Trap Rock for its skid resistance — for high-speed and high-demand pavements.',st:'in',fl:'',pop:0,src:'Plant',attrs:{'Mix type':'FC2 friction course','Aggregate':'High-PSV (Trap Rock)','Use':'Surface, high friction'}}),
+ P({n:'SMA — Stone Mastic Asphalt',c:'asph',sw:'asphalt',u:'tonne',p:null,o:'quote',den:2.44,std:'OPSS SMA',sz:'Premium surface',use:['Heavy truck routes','Intersections','Long-life surface'],desc:'A premium, rut-resistant stone-on-stone surface mix for the most demanding pavements — heavy truck routes and intersections that need to last.',st:'low',fl:'spec',pop:0,src:'Plant',attrs:{'Mix type':'SMA','Structure':'Stone-on-stone skeleton','Use':'Heavy / long-life surface'}}),
+ P({n:'Cold Patch (30 kg bag)',c:'asph',sw:'asphalt',u:'bag',p:24.95,o:'cart',den:0,std:'All-weather',sz:'Bagged',use:['Pothole repair','Year-round patching','Utility cuts'],desc:'Ready-to-use, all-weather cold patch that compacts with a tamper and takes traffic immediately — keep skids on the truck for pothole season.',st:'in',fl:'',pop:0,tr:[[1,24.95],[40,21.95],[100,19.95]],src:'Bagged'}),
+ // CONCRETE (quote)
+ P({n:'Ready-Mix 25 MPa (R-2)',c:'conc',sw:'concrete',u:'m³',p:null,o:'quote',den:0,std:'CSA A23.1 · R-2',sz:'25 MPa @ 28 days',use:['Footings','Flatwork','Sidewalks'],desc:'A general-purpose residential mix for footings, flatwork and sidewalks. Scheduled and dispatched from our plants with GPS-tracked dispatch so you know when the truck arrives.',st:'in',fl:'',pop:1,src:'Plant',attrs:{'Class':'R-2 residential','Strength':'25 MPa @ 28 d','Max w/c':'0.55','Air':'5–8%','Slump':'80 ± 30 mm'}}),
+ P({n:'Ready-Mix 32 MPa (R-4)',c:'conc',sw:'concrete',u:'m³',p:null,o:'quote',den:0,std:'CSA A23.1 · R-4',sz:'32 MPa @ 28 days',use:['Garage floors','Exterior steps','Curbs & porches'],desc:'A high-strength, freeze-thaw-durable exterior mix for garage floors, steps and curbs exposed to de-icing salts. Air-entrained and low w/c for the long haul.',st:'in',fl:'',pop:1,src:'Plant',attrs:{'Class':'R-4 residential','Strength':'32 MPa @ 28 d','Max w/c':'0.45','Air':'5–8%','Exposure':'C-2 / de-icing salts'}}),
+ P({n:'Commercial 32 MPa (C-2)',c:'conc',sw:'concrete',u:'m³',p:null,o:'quote',den:0,std:'CSA A23.1 · C-2',sz:'32 MPa @ 28 days',use:['Structural slabs','Commercial flatwork','Loading areas'],desc:'A C-2 exposure-class structural mix for commercial slabs and flatwork. Mix designs tailored to your spec; QC backed by CCIL-certified labs and optional in-pour maturity sensors.',st:'in',fl:'',pop:0,src:'Plant',attrs:{'Class':'C-2 commercial','Strength':'32 MPa @ 28 d','Max w/c':'0.45','Air':'5–8%'}}),
+ P({n:'E-Line Enviro Low-Carbon 32 MPa',c:'conc',sw:'concrete',u:'m³',p:null,o:'quote',den:0,std:'CSA A23.1 · low-carbon',sz:'32 MPa @ 28 days',use:['Buy-Clean projects','LEED / green builds','Civil & commercial'],desc:'Same strength and durability, materially lower embodied carbon. E-Line Enviro uses supplementary cementing materials to cut CO₂ — built for Buy-Clean procurement and green specs.',st:'in',fl:'eco',pop:1,src:'Plant',attrs:{'Class':'Low-carbon 32 MPa','Strength':'32 MPa @ 28 d','Embodied carbon':'Reduced vs. reference','Docs':'Available on request'}}),
+ P({n:'Self-Consolidating (SCC)',c:'conc',sw:'concrete',u:'m³',p:null,o:'quote',den:0,std:'CSA A23.1 specialty',sz:'High flow',use:['Congested rebar','ICF walls','Architectural'],desc:'A high-flow mix that fills congested forms and ICF walls and self-levels without vibration — a clean, dense finish in tight, heavily reinforced pours.',st:'spec',fl:'spec',pop:0,src:'Plant',attrs:{'Type':'Self-consolidating','Flow':'Self-levelling','Use':'Congested / architectural'}}),
+ P({n:'Sulphate-Resistant 32 MPa',c:'conc',sw:'concrete',u:'m³',p:null,o:'quote',den:0,std:'CSA · HS cement',sz:'32 MPa @ 28 days',use:['Below-grade','Agricultural','Aggressive soils'],desc:'A high-sulphate-resistant mix for below-grade and agricultural structures exposed to aggressive soils and groundwater.',st:'spec',fl:'spec',pop:0,src:'Plant',attrs:{'Class':'Sulphate-resistant','Cement':'Type HS','Use':'Below-grade / aggressive soils'}}),
+ // TRAP ROCK (quote)
+ P({n:'Ontario Trap Rock 16 mm',c:'trap',sw:'trap',u:'tonne',p:null,o:'quote',den:1.70,std:'High-PSV igneous',sz:'16 mm',use:['Surface-course asphalt','High-friction overlays','Skid resistance'],desc:'Premium high-PSV igneous aggregate from our Bruce Mines quarry — exceptional polish and skid resistance for surface-course asphalt where grip matters. Shipped across the Great Lakes.',st:'in',fl:'',pop:0,src:'Bruce Mines',attrs:{'Rock type':'Trap rock (igneous)','Property':'High polished-stone value','Use':'Surface-course / friction'}}),
+ P({n:'Trap Rock FC2 Chip',c:'trap',sw:'trap',u:'tonne',p:null,o:'quote',den:1.70,std:'High-PSV chip',sz:'Chip',use:['FC2 friction course','Chip seal','High-skid surfaces'],desc:'High-friction trap rock chip for FC2 friction-course asphalt and chip-seal surfaces on high-speed roads.',st:'in',fl:'',pop:0,src:'Bruce Mines',attrs:{'Rock type':'Trap rock (igneous)','Property':'High PSV','Use':'FC2 / chip seal'}}),
+ // WINTER (cart)
+ P({n:'Bulk Road Salt (NaCl)',c:'winter',sw:'salt',u:'tonne',p:128.00,o:'cart',den:1.30,std:'Highway-grade NaCl',sz:'Bulk',use:['Road & lot de-icing','Municipal routes','Bulk storage'],desc:'Highway-grade sodium chloride for road and lot de-icing. Reserve your season’s tonnage early — pickup at the yard or scheduled delivery to your bunker.',st:'in',fl:'',pop:1,tr:[[1,128.00],[40,118.00],[100,108.00]],src:'Yard'}),
+ P({n:'Thawrox Treated Salt',c:'winter',sw:'saltm',u:'tonne',p:172.00,o:'cart',den:1.30,std:'Treated NaCl',sz:'Bulk',use:['Colder temps','Faster activation','Less bounce'],desc:'Calcium-chloride-treated salt that activates faster and works at colder temperatures than plain rock salt, with less scatter and bounce.',st:'in',fl:'',pop:0,tr:[[1,172.00],[40,162.00]],src:'Yard'}),
+ P({n:'Winter Sand / Salt Blend',c:'winter',sw:'saltm',u:'tonne',p:96.00,o:'cart',den:1.50,std:'Sand + salt',sz:'Bulk',use:['Traction','Walkways & lots','Cold-temp grip'],desc:'A sand-and-salt traction blend for grip on walkways and lots when it’s too cold for salt alone to melt.',st:'in',fl:'',pop:0,tr:[[1,96.00],[40,88.00]],src:'Yard'}),
+ P({n:'Bagged Ice Melt (20 kg)',c:'winter',sw:'salt',u:'bag',p:18.95,o:'cart',den:0,std:'Blended pellet',sz:'20 kg bag',use:['Entrances & steps','Spot treatment','Pallet stock'],desc:'A fast-acting blended pellet ice melt for entrances and steps. Order by the bag or the pallet.',st:'in',fl:'',pop:0,tr:[[1,18.95],[50,16.50],[100,14.95]],src:'Bagged'}),
+ // LANDSCAPE (cart)
+ P({n:'Screened Topsoil',c:'land',sw:'topsoil',u:'yd³',p:34.00,o:'cart',den:1.30,std:'Screened, blended',sz:'Screened',use:['Lawns & gardens','Grading & fill','Top dressing'],desc:'Clean, screened topsoil for new lawns, gardens and grading. Delivered by the yard, blown or placed.',st:'in',fl:'',pop:1,tr:[[1,34.00],[10,31.00],[30,28.00]],src:'Yard'}),
+ P({n:'Garden Mulch — Natural',c:'land',sw:'mulch',u:'yd³',p:42.00,o:'cart',den:0.40,std:'Shredded bark',sz:'Natural',use:['Garden beds','Moisture retention','Weed suppression'],desc:'Natural shredded bark mulch that holds moisture, suppresses weeds and finishes a bed clean. By the yard, delivered.',st:'in',fl:'',pop:0,tr:[[1,42.00],[10,38.00]],src:'Yard'}),
+ P({n:'Decorative River Rock',c:'land',sw:'river',u:'tonne',p:96.00,o:'cart',den:1.60,std:'Natural, washed',sz:'40–80 mm',use:['Feature beds','Borders','Low-maintenance ground'],desc:'Larger washed river rock in mixed natural tones for feature beds, borders and clean, low-maintenance ground cover.',st:'in',fl:'',pop:0,tr:[[1,96.00],[10,89.00]],src:'Yard'}),
+ // LIME (quote)
+ P({n:'Agricultural Lime (Aglime)',c:'lime',sw:'lime',u:'tonne',p:null,o:'quote',den:1.40,std:'Calcitic aglime',sz:'Fine ground',use:['Soil pH correction','Field conditioning','Spread service'],desc:'Finely ground calcitic limestone to raise soil pH and condition fields. Bulk supply with optional spreading service across the region.',st:'in',fl:'',pop:0,src:'Quarry',attrs:{'Type':'Calcitic aglime','Use':'Soil pH / conditioning','Service':'Bulk + spreading'}}),
+ P({n:'Pelletized Lime',c:'lime',sw:'lime',u:'tonne',p:null,o:'quote',den:1.40,std:'Pelletized',sz:'Pellet',use:['Precise spreading','Lawns & turf','Low dust'],desc:'Pelletized lime for precise, low-dust spreading on turf and smaller fields.',st:'in',fl:'',pop:0,src:'Yard',attrs:{'Type':'Pelletized lime','Use':'Turf / precise spread'}}),
+ // ---- EXPANDED CATALOG (real Tomlinson range) ----
+ P({"n": "Granular A — 30% Recycled", "c": "agg", "sw": "granA", "u": "tonne", "p": 13.5, "o": "cart", "den": 2.2, "std": "Tomlinson #200147 · COO Level B", "sz": "19 mm minus · 30% RCA/RAP", "use": ["Recycled road & driveway base", "Subbase"], "desc": "Granular A blended with 30% recycled asphalt/concrete — same load-bearing base, City of Ottawa Level B approved, lower cost and footprint.", "st": "in", "fl": "rec", "pop": 1, "tr": [[1, 13.5], [20, 12.42], [100, 11.34]], "src": "Recycled"}),
+ P({"n": "Granular B Type I", "c": "agg", "sw": "granB", "u": "tonne", "p": 12.0, "o": "cart", "den": 2.1, "std": "OPSS 1010 · #200070", "sz": "150 mm minus · pit-run", "use": ["Deep sub-base", "Foundation lift"], "desc": "150 mm minus pit-run stone and sand used as a deep foundation sub-base under roads and driveways.", "st": "in", "fl": "", "pop": 1, "tr": [[1, 12.0], [20, 11.04], [100, 10.08]], "src": "Quarry"}),
+ P({"n": "Granular B Type I — Recycled", "c": "agg", "sw": "granB", "u": "tonne", "p": 10.5, "o": "cart", "den": 2.0, "std": "Tomlinson #200150", "sz": "150 mm minus · crushed concrete", "use": ["Recycled sub-base", "Fill"], "desc": "150 mm minus crushed concrete used as a recycled Granular B Type I foundation sub-base.", "st": "in", "fl": "rec", "pop": 0, "tr": [[1, 10.5], [20, 9.66], [100, 8.82]], "src": "Recycled"}),
+ P({"n": "Granular B — 75 mm Limestone", "c": "agg", "sw": "limestone", "u": "tonne", "p": 15.0, "o": "cart", "den": 2.1, "std": "Tomlinson #200137", "sz": "75 mm minus limestone", "use": ["Heavy base course", "Roads"], "desc": "75 mm minus crushed limestone with fines used as a heavy base for driveways and roads.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 15.0], [20, 13.8], [100, 12.6]], "src": "Quarry"}),
+ P({"n": "Granular B — 100 mm (4\")", "c": "agg", "sw": "granB", "u": "tonne", "p": 14.0, "o": "cart", "den": 2.1, "std": "Tomlinson #200057", "sz": "100 mm minus", "use": ["Parking-lot base", "Heavy base"], "desc": "100 mm minus crushed stone with fines used as base for parking lots and roads.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 14.0], [20, 12.88], [100, 11.76]], "src": "Quarry"}),
+ P({"n": "Granular B — 100 mm · 20% Recycled", "c": "agg", "sw": "granB", "u": "tonne", "p": 12.0, "o": "cart", "den": 2.1, "std": "#200140 · COO Level B", "sz": "100 mm minus · 20% recycled", "use": ["Recycled heavy base"], "desc": "100 mm minus stone with 20% recycled asphalt/concrete, City of Ottawa Level B approved base.", "st": "in", "fl": "rec", "pop": 0, "tr": [[1, 12.0], [20, 11.04], [100, 10.08]], "src": "Recycled"}),
+ P({"n": "Granular M — 16 mm Limestone", "c": "agg", "sw": "limestone", "u": "tonne", "p": 22.0, "o": "cart", "den": 2.2, "std": "Tomlinson #200169", "sz": "16 mm minus limestone", "use": ["Flagstone & patio base", "Walkways", "Retaining walls"], "desc": "16 mm minus limestone, consistent in colour and compacts tight — the go-to base for flagstone, walkways and patios.", "st": "in", "fl": "", "pop": 1, "tr": [[1, 22.0], [20, 20.24], [100, 18.48]], "src": "Quarry"}),
+ P({"n": "Pipe Cover (½\" minus)", "c": "agg", "sw": "granA", "u": "tonne", "p": 26.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200059", "sz": "12 mm minus crushed", "use": ["Sewer-pipe cover", "Pathways"], "desc": "Crushed stone up to ½\" used as sewer-pipe cover and for driveways and pathways.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 26.0], [20, 23.92], [100, 21.84]], "src": "Quarry"}),
+ P({"n": "Granular O / Select Subgrade", "c": "agg", "sw": "granB", "u": "tonne", "p": 9.0, "o": "cart", "den": 2.0, "std": "Pit-run", "sz": "Unprocessed sand/gravel", "use": ["Bulk fill", "Select subgrade"], "desc": "Unprocessed pit-run sand and gravel used as economical bulk fill and select subgrade.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 9.0], [20, 8.28], [100, 7.56]], "src": "Quarry"}),
+ P({"n": "13.2 mm Concrete Stone (½\" HL3)", "c": "agg", "sw": "clear", "u": "tonne", "p": 38.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200039 · HL3", "sz": "5–20 mm", "use": ["Concrete", "Tank bedding", "HL3 asphalt"], "desc": "5–20 mm coarse aggregate used in concrete and as plant or tank bedding; also the stone in HL3 asphalt.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 38.0], [20, 34.96], [100, 31.92]], "src": "Quarry"}),
+ P({"n": "19 mm Concrete Stone (¾\")", "c": "agg", "sw": "clear", "u": "tonne", "p": 40.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200040", "sz": "5–15 mm premium", "use": ["Concrete", "Premium asphalt"], "desc": "5–15 mm premium coarse aggregate for concrete and asphalt production.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 40.0], [20, 36.8], [100, 33.6]], "src": "Quarry"}),
+ P({"n": "19 mm Clear Stone — Type I Limestone", "c": "agg", "sw": "clear", "u": "tonne", "p": 36.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200125", "sz": "6–19 mm limestone", "use": ["Backfill", "Under-slab", "Landscaping"], "desc": "Washed limestone clear stone, consistent in colour, for backfill, retaining walls, under slabs and landscaping.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 36.0], [20, 33.12], [100, 30.24]], "src": "Quarry"}),
+ P({"n": "19 mm Clear Stone — HL8", "c": "agg", "sw": "clear", "u": "tonne", "p": 35.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200073 · HL8", "sz": "12–19 mm", "use": ["Backfill", "Asphalt mixes"], "desc": "Washed premium clear stone for backfill and retaining walls, and the aggregate in HL8 asphalt.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 35.0], [20, 32.2], [100, 29.4]], "src": "Quarry"}),
+ P({"n": "5 mm Clear ¼\" Grit Limestone", "c": "agg", "sw": "clearS", "u": "tonne", "p": 40.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200134", "sz": "5 mm clear limestone", "use": ["Paver underlay", "Ice control", "Walkways"], "desc": "¼\" clear limestone grit, consistent in colour, used as paving-stone underlay, on walkways and for ice control.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 40.0], [20, 36.8], [100, 33.6]], "src": "Quarry"}),
+ P({"n": "Surge / Rip-Rap R50", "c": "agg", "sw": "granB", "u": "tonne", "p": 34.0, "o": "cart", "den": 1.6, "std": "#200180 · OPSS R50", "sz": "100–300 mm crushed", "use": ["Slope protection", "Erosion control"], "desc": "Well-graded 4–12\" crushed limestone for slope protection of channels and erosion-prone areas.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 34.0], [20, 31.28], [100, 28.56]], "src": "Quarry"}),
+ P({"n": "Mortar Sand (Playground)", "c": "agg", "sw": "sand", "u": "tonne", "p": 30.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200045", "sz": "Fine washed · no clay", "use": ["Brick mortar", "Playground", "Pool base"], "desc": "Finely textured washed sand with no clay — for brick mortar, playgrounds and under pool liners.", "st": "in", "fl": "", "pop": 1, "tr": [[1, 30.0], [20, 27.6], [100, 25.2]], "src": "Sand & gravel"}),
+ P({"n": "Hydro Sand", "c": "agg", "sw": "sand", "u": "tonne", "p": 28.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200061", "sz": "Soft screened", "use": ["Utility-line bedding"], "desc": "Soft screened sand approved for installing and maintaining hydro, internet, water and gas lines.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 28.0], [20, 25.76], [100, 23.52]], "src": "Sand & gravel"}),
+ P({"n": "Sand Fill / Bank Sand", "c": "agg", "sw": "sand", "u": "tonne", "p": 18.0, "o": "cart", "den": 1.5, "std": "Tomlinson #200152", "sz": "Very fine · free-draining", "use": ["Grade raising", "Fill"], "desc": "Very fine free-draining sand used to raise grade and fill around wet areas such as tanks and ponds.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 18.0], [20, 16.56], [100, 15.12]], "src": "Sand & gravel"}),
+ P({"n": "Bedding Sand (Eljen)", "c": "agg", "sw": "sand", "u": "tonne", "p": 30.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200388", "sz": "Coarse porous", "use": ["Leveling", "Animal-pen bedding"], "desc": "Coarse, porous, gravel-based sand that drains effectively, used for leveling and animal-pen bedding.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 30.0], [20, 27.6], [100, 25.2]], "src": "Sand & gravel"}),
+ P({"n": "Enviro-Septic Bedding Sand", "c": "agg", "sw": "sand", "u": "tonne", "p": 34.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200290", "sz": "Fine washed filter media", "use": ["Septic filter beds"], "desc": "Finely textured washed sand used as filter media in Enviro-Septic beds.", "st": "low", "fl": "", "pop": 0, "tr": [[1, 34.0], [20, 31.28], [100, 28.56]], "src": "Sand & gravel"}),
+ P({"n": "Arena Sand", "c": "agg", "sw": "sand", "u": "tonne", "p": 30.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200389", "sz": "Washed medium-coarse", "use": ["Horse arenas", "Volleyball courts"], "desc": "Washed medium-coarse sand for horse arenas, courts and landscaping.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 30.0], [20, 27.6], [100, 25.2]], "src": "Sand & gravel"}),
+ P({"n": "Turtle Nesting Sand", "c": "agg", "sw": "sand", "u": "tonne", "p": 32.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200182", "sz": "Fine washed · no clay", "use": ["Turtle nesting habitat"], "desc": "Finely textured washed sand with no clay that drains well — built to rebuild turtle nesting habitat.", "st": "low", "fl": "", "pop": 0, "tr": [[1, 32.0], [20, 29.44], [100, 26.88]], "src": "Sand & gravel"}),
+ P({"n": "HL4 Medium-Stone Mix", "c": "asph", "sw": "asphalt", "u": "tonne", "p": null, "o": "quote", "den": 2.4, "std": "OPSS 1150 HL4", "sz": "Binder / surface", "use": ["Binder course", "Surface course"], "desc": "Medium-stone hot-mix used as a binder or surface course for heavier-duty paving.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Mix type": "HL4", "Design": "Marshall", "Use": "Binder / surface"}}),
+ P({"n": "Superpave SP19", "c": "asph", "sw": "asphalt", "u": "tonne", "p": null, "o": "quote", "den": 2.41, "std": "OPSS 1151 Superpave", "sz": "19 mm NMAS", "use": ["Binder course", "Medium-high traffic"], "desc": "Superpave 19 mm intermediate/binder-course mix for medium-to-high traffic roads.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Mix type": "SP 19", "Design": "Superpave gyratory", "Top size": "19 mm"}}),
+ P({"n": "Superpave SP25", "c": "asph", "sw": "asphalt", "u": "tonne", "p": null, "o": "quote", "den": 2.42, "std": "OPSS 1151 Superpave", "sz": "25 mm NMAS", "use": ["Base course", "High-volume roads"], "desc": "Superpave 25 mm base-course mix for high-volume road structures.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Mix type": "SP 25", "Design": "Superpave gyratory", "Top size": "25 mm"}}),
+ P({"n": "Ready-Mix 20 MPa Footings (R-1)", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1 · OBC", "sz": "20 MPa @28d · 3–6% air", "use": ["Foundation footings"], "desc": "20 MPa residential mix for foundation footings.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Class": "R-1", "Strength": "20 MPa", "Air": "3–6%", "Max w/c": "0.70"}}),
+ P({"n": "Ready-Mix 25 MPa Interior Slab (R-3)", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1 · OBC", "sz": "25 MPa @28d · non-air", "use": ["Interior basement slabs"], "desc": "25 MPa non-air-entrained mix for interior basement slabs on grade.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Class": "R-3", "Strength": "25 MPa", "Air": "non-air", "Max w/c": "0.65"}}),
+ P({"n": "Agricultural 35 MPa (A-1)", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1", "sz": "35 MPa @28d · 5–8% air", "use": ["Severe manure/silage exposure"], "desc": "35 MPa structurally reinforced agricultural mix for severe manure/silage gas exposure with freeze-thaw.", "st": "in", "fl": "spec", "pop": 0, "src": "Plant", "attrs": {"Class": "A-1", "Strength": "35 MPa", "Air": "5–8%", "Max w/c": "0.40"}}),
+ P({"n": "Agricultural 32 MPa (A-2)", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1", "sz": "32 MPa @28d · 5–8% air", "use": ["Moderate-severe ag exposure"], "desc": "32 MPa reinforced agricultural mix for moderate-to-severe manure/silage exposure.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Class": "A-2", "Strength": "32 MPa", "Air": "5–8%", "Max w/c": "0.45"}}),
+ P({"n": "Agricultural 25 MPa (A-4)", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1", "sz": "25 MPa @28d · 4–7% air", "use": ["Non-structural ag slabs"], "desc": "25 MPa non-structurally-reinforced agricultural mix for moderate ag exposure without freeze-thaw.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Class": "A-4", "Strength": "25 MPa", "Air": "4–7%", "Max w/c": "0.55"}}),
+ P({"n": "15 MPa Lean / Fill Mix", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.3, "std": "CSA A23.1", "sz": "15 MPa @28d", "use": ["Lean fill", "Mud slab"], "desc": "15 MPa low-strength mix for non-structural fill and mud-slab applications.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Strength": "15 MPa", "Use": "Non-structural fill"}}),
+ P({"n": "Fibre-Reinforced Concrete", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1 · macro-fibre", "sz": "Per spec + fibre", "use": ["Slabs-on-grade (mesh replacement)"], "desc": "Concrete dosed with macro-synthetic structural fibres to replace welded-wire mesh in slabs.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Reinforcement": "Macro-synthetic fibre", "Use": "Slab-on-grade"}}),
+ P({"n": "High-Early / Fast-Setting", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1 · accelerated", "sz": "Per spec · fast set", "use": ["Fast form strip", "Cold-weather"], "desc": "Accelerated-set mix delivering faster setting and early strength for quick form removal and cold-weather schedules.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Set": "Accelerated", "Use": "Fast strip / cold weather"}}),
+ P({"n": "Waterproofed (Crystalline)", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1 · crystalline admix", "sz": "Per spec", "use": ["Below-grade waterproofing"], "desc": "Concrete with integral crystalline admixture that reduces permeability for above- and below-grade waterproofing.", "st": "in", "fl": "spec", "pop": 0, "src": "Plant", "attrs": {"Admixture": "Crystalline", "Use": "Waterproofing"}}),
+ P({"n": "Coloured Concrete", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1 · integral colour", "sz": "Per spec + colour", "use": ["Decorative flatwork", "Pool decks"], "desc": "Concrete with computer-dispensed integral colour for driveways, pool decks and decorative floors.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Finish": "Integral colour", "Use": "Decorative"}}),
+ P({"n": "Exposed Aggregate", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 2.4, "std": "CSA A23.1", "sz": "Per spec · decorative", "use": ["Decorative driveways & walks"], "desc": "Decorative mix designed to expose the aggregate at the surface for driveways and walkways.", "st": "in", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Finish": "Exposed aggregate", "Use": "Decorative"}}),
+ P({"n": "Lightweight Concrete", "c": "conc", "sw": "concrete", "u": "m³", "p": null, "o": "quote", "den": 1.8, "std": "CSA A23.1 lightweight", "sz": "Lightweight aggregate", "use": ["Reduced dead-load slabs"], "desc": "Lightweight-aggregate concrete for reduced structural dead load on elevated slabs.", "st": "low", "fl": "", "pop": 0, "src": "Plant", "attrs": {"Type": "Lightweight", "Use": "Reduced dead load"}}),
+ P({"n": "Interlocking Block — Full (2×2×4)", "c": "conc", "sw": "concrete", "u": "each", "p": 95.0, "o": "cart", "den": 0, "std": "Recycled concrete", "sz": "2'×2'×4' · ~1100 kg", "use": ["Retaining walls", "Storage bins"], "desc": "Full-size 2'×2'×4' (~1100 kg) interlocking block cast from recycled concrete — pickup or delivery from ready-mix plants.", "st": "in", "fl": "rec", "pop": 0, "tr": [[1, 95.0], [10, 85.5]], "src": "Plant"}),
+ P({"n": "Interlocking Block — Half (2×2×2)", "c": "conc", "sw": "concrete", "u": "each", "p": 60.0, "o": "cart", "den": 0, "std": "Recycled concrete", "sz": "2'×2'×2' · ~550 kg", "use": ["Wall ends", "Short courses"], "desc": "Half-size 2'×2'×2' (~550 kg) interlocking block cast from recycled concrete for wall ends and shorter courses.", "st": "in", "fl": "rec", "pop": 0, "tr": [[1, 60.0], [10, 54.0]], "src": "Plant"}),
+ P({"n": "HL-1 Trap Rock (⅝\" clear)", "c": "trap", "sw": "trap", "u": "tonne", "p": 58.0, "o": "cart", "den": 1.6, "std": "DSM #B22-072", "sz": "16 mm clear diabase", "use": ["High-friction surface asphalt"], "desc": "⅝\" clear diabase coarse aggregate for high-friction surface-course asphalt.", "st": "in", "fl": "", "pop": 1, "tr": [[1, 58.0], [20, 53.36], [100, 48.72]], "src": "Trap Rock quarry"}),
+ P({"n": "¼\" Chip Trap Rock", "c": "trap", "sw": "trap", "u": "tonne", "p": 62.0, "o": "cart", "den": 1.6, "std": "DSM #B22-072", "sz": "6 mm chip diabase", "use": ["Chip seal", "Friction surface"], "desc": "¼\" diabase chip used in high-friction asphalt and surface treatments.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 62.0], [20, 57.04], [100, 52.08]], "src": "Trap Rock quarry"}),
+ P({"n": "DFC Fines (Trap Rock)", "c": "trap", "sw": "trap", "u": "tonne", "p": 48.0, "o": "cart", "den": 1.7, "std": "DSM #B22-072", "sz": "Fine aggregate", "use": ["Slurry seal", "Micro-surfacing"], "desc": "Diabase fine aggregate providing friction for slurry seal and micro-surfacing.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 48.0], [20, 44.16], [100, 40.32]], "src": "Trap Rock quarry"}),
+ P({"n": "Washed Manufactured Sand (Trap)", "c": "trap", "sw": "screen", "u": "tonne", "p": 45.0, "o": "cart", "den": 1.7, "std": "MDOT Source #95-10", "sz": "Washed manufactured sand", "use": ["Premium asphalt fines"], "desc": "Washed manufactured diabase sand for premium asphalt mixes.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 45.0], [20, 41.4], [100, 37.8]], "src": "Trap Rock quarry"}),
+ P({"n": "Mainline Rail Ballast", "c": "trap", "sw": "trap", "u": "tonne", "p": 52.0, "o": "cart", "den": 1.6, "std": "AREMA · 2½\"×¾\"", "sz": "2½\"×¾\" graded diabase", "use": ["Railway track bed"], "desc": "AREMA-compliant 2½\"×¾\" diabase ballast that holds rail in place and drains the track bed.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 52.0], [20, 47.84], [100, 43.68]], "src": "Trap Rock quarry"}),
+ P({"n": "Landscape Boulders (Trap Rock)", "c": "trap", "sw": "trap", "u": "tonne", "p": 85.0, "o": "cart", "den": 1.7, "std": "Quarry-direct", "sz": "<12\" to >3'", "use": ["Landscaping", "Armour & feature stone"], "desc": "Diabase boulders from under 12\" to over 3', sold quarry-direct for landscaping and feature stone.", "st": "low", "fl": "", "pop": 0, "tr": [[1, 85.0], [20, 78.2], [100, 71.4]], "src": "Trap Rock quarry"}),
+ P({"n": "OTR Concrete Stone", "c": "trap", "sw": "trap", "u": "tonne", "p": 60.0, "o": "cart", "den": 1.6, "std": "Michigan TM 115", "sz": "Coarse concrete aggregate", "use": ["High-abrasion concrete"], "desc": "Diabase coarse aggregate for temperature-sensitive, high-abrasion-resistant industrial concrete.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 60.0], [20, 55.2], [100, 50.4]], "src": "Trap Rock quarry"}),
+ P({"n": "Salt & Grit Mix", "c": "winter", "sw": "saltm", "u": "tonne", "p": 90.0, "o": "cart", "den": 1.5, "std": "Tomlinson #200185", "sz": "Crushed grit + salt", "use": ["Traction", "De-icing"], "desc": "Blended crushed grit and salt for traction and de-icing on icy surfaces.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 90.0], [20, 82.8], [100, 75.6]], "src": "Plant"}),
+ P({"n": "Washed Riverstone ⅜\"", "c": "land", "sw": "river", "u": "tonne", "p": 58.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200383", "sz": "10 mm rounded", "use": ["Decorative beds", "Borders", "Drainage"], "desc": "Washed rounded ⅜\" river stone for decorative beds, borders and drainage.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 58.0], [20, 53.36], [100, 48.72]], "src": "Sand & gravel"}),
+ P({"n": "Washed Riverstone ¾\"", "c": "land", "sw": "river", "u": "tonne", "p": 58.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200384", "sz": "19 mm rounded", "use": ["Decorative landscaping", "Drainage"], "desc": "Washed rounded ¾\" river stone for decorative landscaping and drainage.", "st": "in", "fl": "", "pop": 1, "tr": [[1, 58.0], [20, 53.36], [100, 48.72]], "src": "Sand & gravel"}),
+ P({"n": "Washed Riverstone ¾–2\"", "c": "land", "sw": "river", "u": "tonne", "p": 62.0, "o": "cart", "den": 1.6, "std": "Tomlinson #200385", "sz": "19–50 mm rounded", "use": ["Feature stone", "Water features"], "desc": "Washed rounded ¾–2\" river stone for decorative features and water features.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 62.0], [20, 57.04], [100, 52.08]], "src": "Sand & gravel"}),
+ P({"n": "Washed Riverstone 2–5\"", "c": "land", "sw": "river", "u": "tonne", "p": 68.0, "o": "cart", "den": 1.6, "std": "Kemptville", "sz": "50–125 mm rounded", "use": ["Large decorative", "Erosion accents"], "desc": "Washed rounded 2–5\" river stone for large decorative features and shoreline accents.", "st": "low", "fl": "", "pop": 0, "tr": [[1, 68.0], [20, 62.56], [100, 57.12]], "src": "Sand & gravel"}),
+ P({"n": "Red Reclaimed Wood Mulch", "c": "land", "sw": "mulch", "u": "yard", "p": 42.0, "o": "cart", "den": 0.4, "std": "Reclaimed dyed wood", "sz": "Shredded chips", "use": ["Garden beds", "Moisture & erosion control"], "desc": "Red-dyed mulch made from reclaimed clean construction wood for garden beds.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 42.0], [20, 38.64], [100, 35.28]], "src": "Yard"}),
+ P({"n": "Black Reclaimed Wood Mulch", "c": "land", "sw": "mulch", "u": "yard", "p": 42.0, "o": "cart", "den": 0.4, "std": "Reclaimed dyed wood", "sz": "Shredded chips", "use": ["Garden beds"], "desc": "Black-dyed mulch made from reclaimed clean construction wood for garden beds.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 42.0], [20, 38.64], [100, 35.28]], "src": "Yard"}),
+ P({"n": "Triple Mix", "c": "land", "sw": "topsoil", "u": "yard", "p": 40.0, "o": "cart", "den": 1.0, "std": "Topsoil / compost / peat", "sz": "Equal-parts blend", "use": ["Planting beds", "Gardens"], "desc": "Blended topsoil, compost and peat for planting beds and gardens.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 40.0], [20, 36.8], [100, 33.6]], "src": "Yard"}),
+ P({"n": "Armour Stone", "c": "land", "sw": "limestone", "u": "tonne", "p": 120.0, "o": "cart", "den": 1.7, "std": "Quarry", "sz": "2'–6' dimensional blocks", "use": ["Retaining walls", "Landscape features"], "desc": "Large dimensional quarried limestone blocks for retaining walls and landscape features.", "st": "low", "fl": "", "pop": 0, "tr": [[1, 120.0], [20, 110.4], [100, 100.8]], "src": "Quarry"}),
+ P({"n": "Dolomitic Ag Lime", "c": "lime", "sw": "lime", "u": "tonne", "p": 38.0, "o": "cart", "den": 1.4, "std": "Dolomitic · ≥6% Mg", "sz": "Ground limestone", "use": ["Soil pH + magnesium"], "desc": "Ground dolomitic limestone (≥6% magnesium) that neutralizes acidity and replenishes calcium and magnesium.", "st": "in", "fl": "", "pop": 0, "tr": [[1, 38.0], [20, 34.96], [100, 31.92]], "src": "Quarry"})
+];
+const BYID=Object.fromEntries(PRODUCTS.map(p=>[p.id,p]));
+const money=n=>'$'+n.toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2});
+const unitLabel=u=>u==='m³'?'m³':u;
+
+/* ---------- state ---------- */
+let CART=[],PLP={cat:null,list:null,query:'',title:'All materials'},F={cat:[],use:[],avail:[],src:[]};
+
+/* ---------- shared bits ---------- */
+function stockHtml(s){const m={in:['in','In stock'],low:['low','Low stock'],spec:['spec','Made to order']};const[c,t]=m[s];return `<span class="stk ${c}"><span class="d"></span>${t}</span>`;}
+function priceHtml(p,big){if(p.o==='quote')return `<div class="price"><span class="q">Request pricing</span></div>`;const from=p.tr&&p.tr.length>1?'<span class="from">from</span>':'';return `<div class="price">${from}<span class="p num">${money(p.p)}</span> <span class="u">/ ${unitLabel(p.u)}</span></div>`;}
+function flagHtml(p){if(!p.fl)return '';const m={sale:'Sale',eco:'Low-carbon',rec:'Recycled',spec:'Specialty'};return `<span class="flag ${p.fl}">${m[p.fl]}</span>`;}
+const PHOTOS={granA:'photo-1677099240091-fda6c59a4609',granB:'photo-1671366673878-7a949e358614',limestone:'photo-1671366673878-7a949e358614',clear:'photo-1774284982500-8445b02b667c',clearS:'photo-1774284982500-8445b02b667c',sand:'photo-1569429593410-b498b3fb3387',screen:'photo-1569429593410-b498b3fb3387',river:'photo-1754833372262-c67c2c645cd9',rca:'photo-1671366673878-7a949e358614',salt:'photo-1745192621767-0393e7161f11',saltm:'photo-1745192621767-0393e7161f11',trap:'photo-1672153920078-057c3e9c456d',topsoil:'photo-1770583287085-135748e01164',mulch:'photo-1751318391448-cf01a54fa154'};
+const POSV=['50% 50%','30% 36%','70% 62%','44% 74%','72% 28%','56% 22%','36% 60%','64% 44%','24% 48%','50% 80%'];
+function mediaPhoto(sw,name,seed){if(!PHOTOS[sw])return'';const a=(name||'').replace(/"/g,'');const pos=POSV[Math.abs(seed||0)%POSV.length];return `<div class="ph"><img src="https://images.unsplash.com/${PHOTOS[sw]}?q=80&w=1000&auto=format&fit=crop" alt="${a}" loading="lazy" style="object-position:${pos}" onerror="this.closest('.ph').remove()"><div class="phg"></div><svg class="phn" viewBox="0 0 100 100" preserveAspectRatio="none"><rect width="100" height="100" filter="url(#mslGrain)"/></svg><div class="phv"></div></div>`;}
+function imgWell(p){return swatch(p.sw,p.id)+mediaPhoto(p.sw,p.n,p.id);}
+function card(p){
+ const cta=p.o==='quote'
+   ?`<button class="addbtn q" onclick="event.stopPropagation();openQuote(${p.id})"><svg viewBox="0 0 24 24"><path d="M8 10h8M8 14h5M5 4h14v16l-3-2-3 2-3-2-2 2z"/></svg>Quote</button>`
+   :`<button class="addbtn" onclick="event.stopPropagation();add(${p.id},this)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add</button>`;
+ return `<article class="card reveal">
+   <div class="imgw" onclick="openPDP(${p.id})">${flagHtml(p)}${imgWell(p)}</div>
+   <div class="b"><div class="cat">${CN[p.c]}</div>
+     <div class="nm" onclick="openPDP(${p.id})">${p.n}</div>
+     <div class="meta"><b>${p.sz}</b> · ${p.std}</div>
+     ${stockHtml(p.st)}
+     <div class="foot">${priceHtml(p)}${cta}</div>
+   </div></article>`;
+}
+
+/* ---------- home ---------- */
+const PROMOS=[
+ {cls:'red',k:'Winter is coming',h:'Lock in your salt tonnage.',p:'Reserve bulk road salt and Thawrox now — beat the season rush and the spot price.',cta:'Reserve salt',sw:'salt'},
+ {cls:'dark',k:'Lower carbon, same strength',h:'E-Line Enviro.',p:'Buy-Clean-ready low-carbon concrete for greener specs.',cta:'Explore E-Line',sw:'concrete'},
+ {cls:'lite',k:'OPSS-approved · diverts 100k t/yr',h:'Recycled aggregate.',p:'Spec performance, lower price and footprint.',cta:'Shop recycled',sw:'rca'},
+];
+const TRUST=[
+ ['truck','On time, on site','GPS-tracked delivery and same-day will-call from the yard closest to your job.'],
+ ['lab','Tested every day','CCIL-certified labs. Every pit and plant tested daily to OPSS and CSA spec.'],
+ ['calc','Order by the number','Built-in tonnage and coverage calculators — order the right amount, the first time.'],
+ ['leaf','Lower-carbon options','E-Line Enviro concrete and recycled aggregate, ready for Buy-Clean specs.'],
+];
+const TIC={
+ truck:`<svg viewBox="0 0 24 24" fill="none"><path d="M3 14V6h11v8M14 9h4l3 3v2h-7"/><circle cx="7.5" cy="17" r="1.6"/><circle cx="17.5" cy="17" r="1.6"/></svg>`,
+ lab:`<svg viewBox="0 0 24 24" fill="none"><path d="M9 3v7l-5 8a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-8V3"/><path d="M8 3h8M7.5 15h9"/></svg>`,
+ calc:`<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M16 15h0"/></svg>`,
+ leaf:`<svg viewBox="0 0 24 24" fill="none"><path d="M5 20c10 2 14-6 14-15-9 0-15 3-15 10a5 5 0 0 0 1 5z"/><path d="M5 20c2-6 6-9 10-10"/></svg>`,
+};
+function renderHome(){
+ const feat=BYID[2003]; // 19mm clear stone
+ document.getElementById('herofeat').innerHTML=`<div class="sw">${swatch(feat.sw,feat.id)}</div><span class="badge">Best seller</span>
+   <div class="card" onclick="openPDP(${feat.id})" style="cursor:pointer"><div class="ey2">${CN[feat.c]} · Best seller</div><div class="t">${feat.n}</div><div class="s">${feat.sz} · drainage &amp; under-slab</div><div class="prow"><b class="num">${money(feat.p)}</b><span>/ tonne</span></div></div>`;
+ document.getElementById('promos').innerHTML=PROMOS.map(p=>`<div class="pcard reveal ${p.cls}"><div><div class="k">${p.k}</div><h3>${p.h}</h3><p>${p.p}</p></div><span class="lk">${p.cta} <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span><div class="sw">${swatch(p.sw,p.k.length*13)}</div></div>`).join('');
+ document.getElementById('trust').innerHTML=TRUST.map(t=>`<div class="ti reveal"><div class="ic">${TIC[t[0]]}</div><div><h4>${t[1]}</h4><p>${t[2]}</p></div></div>`).join('');
+ document.getElementById('cattiles').innerHTML=CATS.map(c=>{const cnt=PRODUCTS.filter(p=>p.c===c.id).length;return `<div class="ctile reveal" onclick="go('plp',{cat:'${c.id}',title:'${c.name}'})"><div class="sw">${swatch(c.sw,c.id.length*29+7)}${mediaPhoto(c.sw,c.name,c.id.length*7)}</div><div class="lb"><div class="nm">${c.name}</div><div class="ct">${cnt} product${cnt>1?'s':''}</div></div></div>`;}).join('');
+ document.getElementById('reorder').innerHTML=[2001,2003,2027,2019,2031].map(id=>card(BYID[id])).join('');
+ document.getElementById('popular').innerHTML=PRODUCTS.filter(p=>p.pop).slice(0,8).map(card).join('');
+ observeReveals();
+}
+
+/* ---------- PLP ---------- */
+function go(view,opts={}){
+ window.scrollTo(0,0);
+ if(view==='load')renderLoad();
+ if(view==='yard')renderYard();
+ if(view==='plp'){F={cat:[],use:[],avail:[],src:[]};PLP.cat=opts.cat||null;PLP.list=opts.list||null;PLP.query=opts.query||'';PLP.title=opts.title||(PLP.cat?CN[PLP.cat]:'All materials');
+   document.getElementById('plptitle').textContent=PLP.title;document.getElementById('plpcrumb').textContent=PLP.title;
+   const cobj=CATS.find(c=>c.id===PLP.cat);document.getElementById('plpsub').textContent=cobj?cobj.blurb:(PLP.list==='reorder'?'Materials you’ve ordered before — reorder in a tap.':'');
+   buildFilters();renderGrid();}
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById('view-'+view).classList.add('on');closeSuggest();
+}
+function basePool(){let pool=PRODUCTS.slice();if(PLP.list==='reorder')pool=[2001,2003,2027,2019,2031,2009,2011].map(id=>BYID[id]);if(PLP.cat)pool=pool.filter(p=>p.c===PLP.cat);if(PLP.query){const q=PLP.query.toLowerCase();pool=pool.filter(p=>(p.n+p.std+p.sz+CN[p.c]+(p.use||[]).join(' ')).toLowerCase().includes(q));}return pool;}
+function buildFilters(){
+ const pool=basePool();let h='';
+ const cats=[...new Set(pool.map(p=>p.c))];
+ if(!PLP.cat&&cats.length>1)h+=`<div class="fg"><h5>Material</h5>`+cats.map(c=>`<label class="fo"><input type="checkbox" data-f="cat" value="${c}" onchange="tg('cat',this)"> ${CN[c]} <span class="ct">${pool.filter(p=>p.c===c).length}</span></label>`).join('')+`</div>`;
+ const uses=[...new Set(pool.flatMap(p=>p.use||[]))].sort().slice(0,8);
+ h+=`<div class="fg"><h5>Application</h5>`+uses.map(u=>`<label class="fo"><input type="checkbox" data-f="use" value="${u}" onchange="tg('use',this)"> ${u} <span class="ct">${pool.filter(p=>(p.use||[]).includes(u)).length}</span></label>`).join('')+`</div>`;
+ const srcs=[...new Set(pool.map(p=>p.src))];
+ h+=`<div class="fg"><h5>Source</h5>`+srcs.map(s=>`<label class="fo"><input type="checkbox" data-f="src" value="${s}" onchange="tg('src',this)"> ${s} <span class="ct">${pool.filter(p=>p.src===s).length}</span></label>`).join('')+`</div>`;
+ h+=`<div class="fg"><h5>Availability</h5><label class="fo"><input type="checkbox" data-f="avail" value="in" onchange="tg('avail',this)"> In stock now <span class="ct">${pool.filter(p=>p.st==='in').length}</span></label><label class="fo"><input type="checkbox" data-f="avail" value="cart" onchange="tg('avail',this)"> Order online <span class="ct">${pool.filter(p=>p.o==='cart').length}</span></label></div>`;
+ h+=`<div class="clearf" onclick="clearF()">Clear all filters</div>`;
+ document.getElementById('filters').innerHTML=h;
+}
+function tg(k,el){if(el.checked)F[k].push(el.value);else F[k]=F[k].filter(v=>v!==el.value);renderGrid();}
+function clearF(){F={cat:[],use:[],avail:[],src:[]};buildFilters();renderGrid();}
+function renderGrid(){
+ let pool=basePool();
+ if(F.cat.length)pool=pool.filter(p=>F.cat.includes(p.c));
+ if(F.use.length)pool=pool.filter(p=>(p.use||[]).some(u=>F.use.includes(u)));
+ if(F.src.length)pool=pool.filter(p=>F.src.includes(p.src));
+ if(F.avail.includes('in'))pool=pool.filter(p=>p.st==='in');
+ if(F.avail.includes('cart'))pool=pool.filter(p=>p.o==='cart');
+ const s=document.getElementById('sort').value;const pv=p=>p.p==null?1e9:p.p;
+ if(s==='plo')pool.sort((a,b)=>pv(a)-pv(b));if(s==='phi')pool.sort((a,b)=>pv(b)-pv(a));if(s==='az')pool.sort((a,b)=>a.n.localeCompare(b.n));
+ document.getElementById('plpcount').textContent=pool.length;
+ document.getElementById('plpgrid').innerHTML=pool.length?pool.map(card).join(''):`<div class="empty">No materials match those filters. <a style="color:var(--red);font-weight:600;cursor:pointer" onclick="clearF()">Clear filters</a></div>`;
+ const chips=[...F.cat.map(v=>['cat',v,CN[v]]),...F.use.map(v=>['use',v,v]),...F.src.map(v=>['src',v,v]),...F.avail.map(v=>['avail',v,v==='in'?'In stock':'Order online'])];
+ document.getElementById('chips').innerHTML=chips.map(c=>`<span class="chip" onclick="rmChip('${c[0]}',this.dataset.v)" data-v="${c[1]}">${c[2]} <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></span>`).join('');
+ observeReveals();
+}
+function rmChip(k,v){F[k]=F[k].filter(x=>x!==v);buildFilters();Object.keys(F).forEach(kk=>F[kk].forEach(val=>{const el=document.querySelector(`[data-f="${kk}"][value="${CSS.escape(val)}"]`);if(el)el.checked=true;}));renderGrid();}
+
+/* ---------- PDP ---------- */
+let CALC={shape:'rect'};
+function openPDP(id){
+ const p=BYID[id];window.scrollTo(0,0);
+ const isCart=p.o==='cart';
+ const tiers=p.tr&&p.tr.length>1?`<div class="tiers"><div class="th"><span>Quantity (${unitLabel(p.u)})</span><span>Price / ${unitLabel(p.u)}</span></div>`+p.tr.map((t,i)=>{const sv=i>0?Math.round((1-t[1]/p.tr[0][1])*100):0;const hi=p.tr[i+1]?(p.tr[i+1][0]-1):null;return `<div class="tr"><b>${t[0]}${hi?'–'+hi:'+'}</b><span class="num">${money(t[1])} ${sv?`<span class="save">−${sv}%</span>`:''}</span></div>`;}).join('')+`</div>`:'';
+ const attrs=p.attrs||{Material:p.std,'Size / gradation':p.sz,'Bulk density':(p.den?`${p.den} t/m³`:'—'),Source:p.src,Unit:unitLabel(p.u)};
+ const specRows=Object.entries(attrs).map(([k,v])=>`<div class="r"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+ const calc=(isCart&&p.den)?`<div class="calc"><h4>How much do I need?</h4>
+   <div class="seg"><button id="csr" class="on" onclick="setShape('rect')">Rectangle</button><button id="csc" onclick="setShape('circle')">Circle</button></div>
+   <div class="row"><div class="fieldlet"><label id="cl1">Length (ft)</label><input id="cL" type="number" min="0" value="20" oninput="calcRun(${p.id})"></div><div class="fieldlet" id="cw"><label>Width (ft)</label><input id="cW" type="number" min="0" value="10" oninput="calcRun(${p.id})"></div><div class="fieldlet"><label>Depth (in)</label><input id="cD" type="number" min="0" value="4" oninput="calcRun(${p.id})"></div></div>
+   <div class="res"><div><div class="big" id="cRes">—</div><div class="sm" id="cRes2">enter your area</div></div><button onclick="calcAdd(${p.id})">Add to order</button></div></div>`:'';
+ const orderBlock=isCart
+  ?`<div class="bb"><div class="pl">${p.tr&&p.tr.length>1?'<span class="from">from</span>':''}<span class="p num">${money(p.p)}</span><span class="u">/ ${unitLabel(p.u)}</span></div>
+     <div class="zone">Yard pickup price · delivery quoted by postal code</div>${stockHtml(p.st)}${tiers}${calc}
+     <div class="qtyrow"><div class="qty"><button onclick="stepQ(-1)" aria-label="less">−</button><input id="pq" value="1" onchange="this.value=Math.max(1,parseFloat(this.value)||1)"></div><span class="uom">${unitLabel(p.u)}${p.u==='bag'?'s':''}</span></div>
+     <button class="bigadd" onclick="addQ(${p.id})"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add to order</button>
+     <button class="subadd" onclick="openQuote(${p.id})">Need a delivered price? Request a quote</button>`
+  :`<div class="bb"><div class="pl"><span class="pq">Priced & scheduled to spec</span></div>
+     <div class="zone">${p.u==='m³'?'Ready-mix is dispatched to your pour window':'Plant pickup or delivery, by the tonne'}</div>${stockHtml(p.st)}
+     <button class="bigadd" style="margin-top:16px" onclick="openQuote(${p.id})"><svg viewBox="0 0 24 24"><path d="M8 10h8M8 14h5M5 4h14v16l-3-2-3 2-3-2-2 2z"/></svg>Request a quote</button>
+     <button class="subadd" onclick="toast('A rep will call — prototype')">Talk to a materials rep</button>`;
+ const feats=isCart?[['truck','Delivery or same-day will-call'],['calc','Order by tonne, yard or bag'],['leaf','Recycled & low-carbon options']]:[['truck','GPS-tracked delivery & live ETA'],['lab','CCIL-certified quality, spec’d to your job'],['calc','Quote in minutes — qty, date, site']];
+ document.getElementById('pdpwrap').innerHTML=`
+  <div class="crumb"><a href="#" onclick="go('home');return false">Home</a><span class="sep">/</span><a href="#" onclick="go('plp',{cat:'${p.c}',title:'${CN[p.c]}'});return false">${CN[p.c]}</a><span class="sep">/</span><span>${p.n}</span></div>
+  <div class="pdpgrid">
+   <div class="pdpmedia"><div class="pdpimg">${imgWell(p)}</div>
+     <div class="pdpthumbs"><div class="pth on">${imgWell(p)}</div><div class="pth">${swatch(p.sw,p.id+50)}</div><div class="pth">${swatch(p.sw,p.id+90)}</div></div></div>
+   <div class="pdpinfo"><div class="cat">${CN[p.c]}</div><h1>${p.n}</h1>
+     <p class="lead">${p.desc}</p>
+     <div class="usefor"><h4>Use it for</h4><ul>${p.use.map(u=>`<li><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>${u}</li>`).join('')}</ul></div>
+     ${orderBlock}
+     <div class="bbfeat">${feats.map(f=>`<div class="f">${TIC[f[0]]}${f[1]}</div>`).join('')}</div>
+     </div>
+   </div></div>
+  <div class="block specwrap"><h2 class="disp tick" style="font-size:22px;margin-bottom:16px">Specifications</h2><div class="specrows" style="max-width:680px">${specRows}</div>
+    <button class="datasheet"><svg viewBox="0 0 24 24"><path d="M14 3H6v18h12V7z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 16h6"/></svg>Download product spec sheet (PDF)</button></div>
+  <div class="block"><div class="shead"><h2 class="tick">Often ordered with</h2></div><div class="grid">${PRODUCTS.filter(x=>x.c===p.c&&x.id!==p.id).slice(0,4).map(card).join('')||PRODUCTS.filter(x=>x.id!==p.id).slice(0,4).map(card).join('')}</div></div>`;
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));document.getElementById('view-pdp').classList.add('on');
+ document.querySelectorAll('#view-pdp .pth').forEach(t=>t.onclick=()=>{document.querySelectorAll('#view-pdp .pth').forEach(x=>x.classList.remove('on'));t.classList.add('on');});
+ CALC={shape:'rect'};if(isCart&&p.den)calcRun(p.id);observeReveals();closeSuggest();
+}
+function setShape(s){CALC.shape=s;document.getElementById('csr').classList.toggle('on',s==='rect');document.getElementById('csc').classList.toggle('on',s==='circle');document.getElementById('cw').style.display=s==='circle'?'none':'';document.getElementById('cl1').textContent=s==='circle'?'Diameter (ft)':'Length (ft)';calcRun(window._pid);}
+let _calcT=0;
+function calcRun(id){window._pid=id;const p=BYID[id];const L=parseFloat(document.getElementById('cL').value)||0,W=CALC.shape==='circle'?L:(parseFloat(document.getElementById('cW').value)||0),D=parseFloat(document.getElementById('cD').value)||0;
+ let areaFt=CALC.shape==='circle'?Math.PI*Math.pow(L/2,2):L*W;const volFt3=areaFt*(D/12);const volM3=volFt3*0.0283168;const volYd3=volFt3/27;
+ let out,sub;
+ if(p.u==='yd³'){out=`${volYd3.toFixed(1)} yd³`;sub=`≈ ${(volYd3*1.0).toFixed(1)} cubic yards needed`;window._calcQty=Math.max(0.5,+volYd3.toFixed(1));}
+ else{const t=volM3*p.den;out=`${t.toFixed(1)} tonnes`;sub=`≈ ${volYd3.toFixed(1)} yd³ · ${volM3.toFixed(1)} m³`;window._calcQty=Math.max(0.5,+t.toFixed(1));}
+ if(!areaFt||!D){out='—';sub='enter your area';window._calcQty=0;}
+ document.getElementById('cRes').textContent=out;document.getElementById('cRes2').textContent=sub;const _r=document.querySelector('.calc .res');if(_r){_r.classList.remove('flash');void _r.offsetWidth;_r.classList.add('flash');}}
+function calcAdd(id){if(!window._calcQty){toast('Enter your area first');return;}document.getElementById('pq').value=window._calcQty;add(id,null,window._calcQty);}
+function stepQ(d){const el=document.getElementById('pq');el.value=Math.max(1,(parseFloat(el.value)||1)+d);}
+function addQ(id){add(id,null,parseFloat(document.getElementById('pq').value)||1);}
+
+/* ---------- cart ---------- */
+function add(id,btn,q=1){const ex=CART.find(c=>c.id===id);if(ex)ex.q+=q;else CART.push({id,q});updateCart();const _b=document.getElementById('cbadge');_b.classList.remove('bump');void _b.offsetWidth;_b.classList.add('bump');
+ if(btn){btn.classList.add('added');btn.innerHTML='✓';setTimeout(()=>{btn.classList.remove('added');btn.innerHTML='<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14"/></svg>Add';},1000);}
+ toast(`${q% 1?q.toFixed(1):q} ${unitLabel(BYID[id].u)}${q>1?'s':''} added`);}
+function updateCart(){const n=CART.reduce((s,c)=>s+c.q,0);const b=document.getElementById('cbadge');b.textContent=CART.length;b.style.display=CART.length?'flex':'none';
+ const items=document.getElementById('ditems');
+ if(!CART.length){items.innerHTML=`<div class="dempty"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6h15l-1.6 9h-12z"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg><div>Your order is empty.</div></div>`;document.getElementById('dfoot').innerHTML='';return;}
+ items.innerHTML=CART.map(c=>{const p=BYID[c.id];return `<div class="di"><div class="ti">${swatch(p.sw,p.id)}</div><div style="flex:1"><div class="nm">${p.n}</div><div class="sk">${p.sz} · ${unitLabel(p.u)}</div><div class="row"><div class="miniq"><button onclick="chq(${c.id},-1)">−</button><span class="num">${c.q%1?c.q.toFixed(1):c.q}</span><button onclick="chq(${c.id},1)">+</button></div><div class="pp num">${money(p.p*c.q)}</div></div></div></div>`;}).join('');
+ const sub=CART.reduce((s,c)=>s+BYID[c.id].p*c.q,0);
+ document.getElementById('dfoot').innerHTML=`<div class="ln"><span>Materials subtotal</span><span class="num">${money(sub)}</span></div><div class="ln"><span>Delivery</span><span>Quoted by postal code</span></div><div class="tot"><span>Estimated subtotal</span><span class="num">${money(sub)}</span></div><button class="co" onclick="toast('Checkout — prototype')">Checkout &amp; schedule delivery</button><button class="rq" onclick="closeCart();openQuote(CART[0].id)">Request a full quote instead</button><div class="note">Contract pricing &amp; aggregate levy applied at checkout when signed in.</div>`;}
+function chq(id,d){const c=CART.find(x=>x.id===id);if(!c)return;c.q=Math.max(0,c.q+d);if(c.q<=0)CART=CART.filter(x=>x.id!==id);updateCart();}
+function openCart(){document.getElementById('drawer').classList.add('on');document.getElementById('scrim').classList.add('on');}
+function closeCart(){document.getElementById('drawer').classList.remove('on');document.getElementById('scrim').classList.remove('on');}
+
+/* ---------- quote modal ---------- */
+let QDEL='delivery';
+function openQuote(id){const p=BYID[id];QDEL='delivery';
+ document.getElementById('qbox').innerHTML=`
+  <div class="qhead"><button class="qx" onclick="closeQuote()" aria-label="Close"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+   <div class="k">Request a quote</div><h2>Materials quote</h2><p>Tell us the job — we’ll come back with a delivered price, lead time and spec confirmation.</p></div>
+  <div class="qbody">
+   <div class="qprod"><div class="ti">${swatch(p.sw,p.id)}</div><div><div class="nm">${p.n}</div><div class="sk">${p.sz} · ${p.std}</div></div></div>
+   <div class="qgrid">
+    <div class="field"><label>Quantity <span class="req">*</span></label><input type="number" min="0" placeholder="e.g. 40" value=""></div>
+    <div class="field"><label>Unit</label><select><option ${p.u==='tonne'?'selected':''}>tonne</option><option ${p.u==='m³'?'selected':''}>m³</option><option ${p.u==='yd³'?'selected':''}>cubic yard</option><option ${p.u==='bag'?'selected':''}>bag / pallet</option></select></div>
+    <div class="field full"><label>Pickup or delivery <span class="req">*</span></label><div class="qseg"><button class="on" id="qdel" onclick="qd('delivery')">Delivery to site</button><button id="qpick" onclick="qd('pickup')">Pickup at yard</button></div></div>
+    <div class="field" id="qaddrf"><label>Delivery postal code <span class="req">*</span></label><input placeholder="K2J 6K7"></div>
+    <div class="field"><label>Needed by <span class="req">*</span></label><input type="date"></div>
+    <div class="field"><label>Sector</label><select><option>Residential</option><option selected>Commercial / ICI</option><option>Civil / road</option><option>Municipal</option><option>Agricultural</option><option>Landscaper</option></select></div>
+    <div class="field"><label>Spec / mix (optional)</label><input placeholder="e.g. OPSS 1010, 32 MPa, PG58-34"></div>
+    <div class="field"><label>Company</label><input placeholder="Company name"></div>
+    <div class="field"><label>PO / project #</label><input placeholder="Optional"></div>
+    <div class="field"><label>Name <span class="req">*</span></label><input placeholder="Your name"></div>
+    <div class="field"><label>Phone <span class="req">*</span></label><input placeholder="(613) 000-0000"></div>
+    <div class="field full"><label>Notes</label><textarea placeholder="Access, on-site contact, staging, time window…"></textarea></div>
+   </div>
+   <button class="qsubmit" onclick="submitQuote()">Send quote request</button>
+   <div class="qnote">Typical response within 1 business hour during yard hours · or call 1-613-690-3311</div>
+  </div>`;
+ document.getElementById('modal').classList.add('on');
+}
+function qd(m){QDEL=m;document.getElementById('qdel').classList.toggle('on',m==='delivery');document.getElementById('qpick').classList.toggle('on',m==='pickup');
+ document.getElementById('qaddrf').innerHTML=m==='delivery'?`<label>Delivery postal code <span class="req">*</span></label><input placeholder="K2J 6K7">`:`<label>Pickup yard</label><select><option>Ottawa (Carlsbad)</option><option>Kemptville</option><option>Brechin</option><option>Napanee</option></select>`;}
+function submitQuote(){document.getElementById('qbox').innerHTML=`<div class="qsuccess"><div class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7"/></svg></div><h2>Quote request sent.</h2><p>A Tomlinson materials rep will confirm price, spec and lead time — typically within the hour during yard hours.</p><button onclick="closeQuote()">Done</button></div>`;}
+function closeQuote(){document.getElementById('modal').classList.remove('on');}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeQuote();});
+
+/* ---------- search ---------- */
+const qel=document.getElementById('q');
+qel.addEventListener('input',()=>{const v=qel.value.trim().toLowerCase();const sg=document.getElementById('suggest');if(v.length<2){sg.classList.remove('on');return;}
+ const m=PRODUCTS.filter(p=>(p.n+p.std+p.sz+CN[p.c]+(p.use||[]).join(' ')).toLowerCase().includes(v)).slice(0,6);
+ if(!m.length){sg.classList.remove('on');return;}
+ sg.innerHTML=m.map(p=>`<div class="sug" onclick="openPDP(${p.id});qel.value='';closeSuggest()"><div class="ti">${swatch(p.sw,p.id)}</div><div><div class="nm">${p.n}</div><div class="sk">${CN[p.c]} · ${p.sz}</div></div><div class="pr num">${p.o==='quote'?'Quote':money(p.p)}</div></div>`).join('');
+ sg.classList.add('on');});
+qel.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch();});
+function runSearch(){const v=qel.value.trim();if(!v)return;go('plp',{query:v,title:`Results for “${v}”`});closeSuggest();}
+function closeSuggest(){document.getElementById('suggest').classList.remove('on');}
+document.addEventListener('click',e=>{if(!e.target.closest('.search'))closeSuggest();});
+
+/* ---------- misc ---------- */
+let tt;function toast(t){const el=document.getElementById('toast');document.getElementById('toasttext').textContent=t;el.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('on'),1900);}
+document.getElementById('catnav').innerHTML=CATS.slice(0,5).map(c=>`<button class="navi" onclick="go('plp',{cat:'${c.id}',title:'${c.name}'})">${c.name}</button>`).join('');
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCart();closeQuote();}});
+const _hdr=document.querySelector('header.main');addEventListener('scroll',()=>{_hdr.classList.toggle('scrolled',scrollY>8);},{passive:true});
+let _io;
+function observeReveals(){
+ const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+ const els=document.querySelectorAll('.reveal:not(.in)');
+ if(reduce||!('IntersectionObserver'in window)){els.forEach(e=>e.classList.add('in'));return;}
+ if(!_io)_io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');_io.unobserve(en.target);}}),{threshold:0.06,rootMargin:'0px 0px -36px 0px'});
+ els.forEach((e,i)=>{e.style.transitionDelay=((i%6)*55)+'ms';_io.observe(e);});
+}
+/* ---------- build your load (job estimator) ---------- */
+const JOBIC={
+road:`<svg viewBox="0 0 24 24" fill="none"><path d="M4 21 8 3M20 21 16 3M12 6v2M12 11v2M12 16v2"/></svg>`,
+asph:`<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="1.5"/><path d="M7 12h2.5M13 12h4"/></svg>`,
+paver:`<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 9h18M3 15h18M9 3v6M15 9v6M9 15v6"/></svg>`,
+drop:`<svg viewBox="0 0 24 24" fill="none"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z"/></svg>`,
+lot:`<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9.5 16V8h2.8a2.6 2.6 0 0 1 0 5.2H9.5"/></svg>`,
+leaf:`<svg viewBox="0 0 24 24" fill="none"><path d="M5 20c10 2 14.5-6 14-15-9-.5-15 3-15 10a5 5 0 0 0 1 5Z"/><path d="M5 20c2-6.5 6-9.5 10-10.5"/></svg>`};
+const JOBS=[
+{id:'gravdrive',n:'Gravel driveway',b:'Compacted granular surface',ic:'road',L:[[2002,150],[2001,100]]},
+{id:'asphdrive',n:'Asphalt driveway',b:'Granular base + HL3 surface',ic:'asph',L:[[2001,150],[2013,50]]},
+{id:'interlock',n:'Interlock patio / walk',b:'Base + stone-dust setting bed',ic:'paver',L:[[2001,150],[2009,25]]},
+{id:'drain',n:'Foundation drainage',b:'19 mm clear-stone surround',ic:'drop',L:[[2003,150]]},
+{id:'lotbase',n:'Parking-lot base',b:'Heavy-duty granular base',ic:'lot',L:[[2002,300],[2001,150]]},
+{id:'decobed',n:'Decorative stone bed',b:'River rock ground cover',ic:'leaf',L:[[2010,75]]}];
+let LOAD={job:null,L:24,W:12};
+function renderLoad(){
+ const jc=JOBS.map(j=>`<div class="job ${LOAD.job===j.id?'on':''}" onclick="selectJob('${j.id}')"><div class="ji">${JOBIC[j.ic]}</div><div><div class="jn">${j.n}</div><div class="jb">${j.b}</div></div></div>`).join('');
+ document.getElementById('loadwrap').innerHTML=`<div class="load">
+  <div class="crumb"><a href="#" onclick="go('home');return false">Home</a><span class="sep">›</span><span>Build your load</span></div>
+  <div class="loadhd"><h1>Build your load.</h1><p>Tell us what you’re building and how big — we’ll work out exactly how much of each material the job needs, ready to add to your order or send for a quote. No more guessing on the tailgate.</p></div>
+  <div class="loadgrid">
+   <div>
+    <div class="step"><div class="sl"><span class="n">1</span>What are you building?</div><div class="jobs">${jc}</div></div>
+    <div class="step"><div class="sl"><span class="n">2</span>How big is it?</div>
+     <div class="dims">
+      <div class="f"><label>Length (ft)</label><input id="ldL" type="number" min="0" inputmode="decimal" value="${LOAD.L}" oninput="onDim()"></div>
+      <div class="f"><label>Width (ft)</label><input id="ldW" type="number" min="0" inputmode="decimal" value="${LOAD.W}" oninput="onDim()"></div>
+      <div class="area" id="ldArea"></div>
+     </div>
+    </div>
+   </div>
+   <div class="loadout"><div id="loadResult"></div></div>
+  </div></div>`;
+ computeResult();
+}
+function selectJob(id){LOAD.job=id;renderLoad();}
+function onDim(){LOAD.L=parseFloat(document.getElementById('ldL').value)||0;LOAD.W=parseFloat(document.getElementById('ldW').value)||0;computeResult();}
+function computeResult(){
+ const area=LOAD.L*LOAD.W,ae=document.getElementById('ldArea');
+ if(ae)ae.innerHTML=area>0?`Area <b>${Math.round(area).toLocaleString()} ft²</b> · ${Math.round(area*0.0929).toLocaleString()} m²`:'';
+ const out=document.getElementById('loadResult');if(!out)return;
+ const job=JOBS.find(j=>j.id===LOAD.job);
+ if(!job){out.innerHTML=`<div class="loadempty">Pick what you’re building to see your full materials list — base, surface and bedding, each with the right tonnage.</div>`;return;}
+ let total=0,anyQ=false,rows='';LOAD.calc=[];
+ job.L.forEach(([pid,depth])=>{const p=BYID[pid];const t=Math.max(0.1,Math.round(area*0.092903*(depth/1000)*p.den*10)/10);const q=p.o==='quote';if(q)anyQ=true;else total+=t*p.p;LOAD.calc.push({p,t,q});
+  rows+=`<div class="lr"><div class="ti">${swatch(p.sw,p.id)}</div><div><div class="nm">${p.n}</div><div class="ly">${depth} mm compacted · ${p.sz||p.std||p.u}</div></div><div class="qt"><b class="num">${area>0?t:'—'} t</b>${q?`<span class="q">quote</span>`:`<span class="num">${area>0?money(t*p.p):'—'}</span>`}</div></div>`;});
+ out.innerHTML=`<div class="oh"><h3>Your materials</h3><div class="jt">${job.n} · ${Math.round(area).toLocaleString()} ft²</div></div>
+  <div class="loadrows">${rows}</div>
+  <div class="loadfoot">
+   <div class="tot"><span class="l">Materials${anyQ?' (priced items)':''}</span><span class="v num">${area>0?money(total):'—'}</span></div>
+   <div class="sub">Yard-pickup pricing${anyQ?' · asphalt quoted separately':''} · delivery by postal code</div>
+   <button class="ba" onclick="addLoad()">Add the whole load to order</button>
+   <button class="bq" onclick="openQuote(${job.L[0][0]})">Request a quote for this job</button>
+   <div class="loadnote">Estimates use compacted depths and typical bulk densities. Your MSL rep confirms final quantities for the job.</div>
+  </div>`;
+}
+function addLoad(){if(!LOAD.calc||!LOAD.calc.length||LOAD.L*LOAD.W<=0){toast('Pick a job and size first');return;}let n=0;LOAD.calc.forEach(c=>{if(!c.q){add(c.p.id,null,c.t);n++;}});toast(n?`Load added — ${n} material${n>1?'s':''} in your order`:'Added');if(n)openCart();}
+
+/* ---------- the yard (trade account hub) ---------- */
+const YARD={
+ co:'Bytown Contracting Ltd.',acct:'MSL-04417',terms:'Net 30',credit:[18450,75000],
+ rep:{n:'Dan Levesque',t:'Account Manager · Aggregates',ph:'613-555-0142',em:'dlevesque@tomlinsongroup.com'},
+ season:{spend:248500,tonnes:1840},
+ sites:[['312 Roosevelt Ave, Westboro','Primary'],['Kanata Lakes Ph.2 — Lot 47','Job site'],['1820 Mer Bleue Rd, Orléans','Yard']],
+ deliveries:[
+  {id:'SO-88231',status:'enroute',site:'Kanata Lakes Ph.2',eta:'Today · ETA 10:42 AM',truck:'Unit 214',items:[[2001,42],[2003,18]]},
+  {id:'SO-88204',status:'scheduled',site:'Westboro driveway',eta:'Tomorrow · 7:00–9:00 AM',truck:'',items:[[2013,'quote']]}
+ ],
+ orders:[
+  {id:'SO-88231',date:'Jun 10, 2026',it:'Granular A · 19 mm Clear Stone',t:1284.60},
+  {id:'SO-88102',date:'Jun 3, 2026',it:'HPB · Stone Dust / Screenings',t:2140.00},
+  {id:'SO-87988',date:'May 28, 2026',it:'Concrete Sand · Mason Sand',t:865.50},
+  {id:'SO-87844',date:'May 19, 2026',it:'Recycled Crushed Concrete (RCA)',t:540.00}
+ ],
+ jobs:[
+  {n:'Westboro driveway',items:[[2002,150],[2001,100]],last:'May 19'},
+  {n:'Kanata subdivision Ph.2',items:[[2002,300],[2001,150]],last:'Jun 3'},
+  {n:'Orléans patio',items:[[2001,150],[2009,25]],last:'May 28'}
+ ],
+ again:[2001,2003,2005,2009]
+};
+const YIC={reorder:`<svg viewBox="0 0 24 24" fill="none"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>`,truck:`<svg viewBox="0 0 24 24" fill="none"><path d="M3 14V6h11v8M14 9h4l3 3v2h-7"/><circle cx="7.5" cy="17" r="1.6"/><circle cx="17.5" cy="17" r="1.6"/></svg>`,calc:`<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2.5M12.5 11h2.5M8 15h2.5M12.5 15h2.5"/></svg>`,doc:`<svg viewBox="0 0 24 24" fill="none"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>`,phone:`<svg viewBox="0 0 24 24" fill="none"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>`,mail:`<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`};
+function reorderJob(i){const j=YARD.jobs[i];let n=0;j.items.forEach(([id,q])=>{const p=BYID[id];if(p&&p.o!=='quote'){add(id,null,q);n++;}});toast(j.n+' added — '+n+' materials');openCart();}
+function renderYard(){
+ const Y=YARD,ini=Y.rep.n.split(' ').map(w=>w[0]).join(''),pct=Math.round(Y.credit[0]/Y.credit[1]*100),PT={enroute:'En route',scheduled:'Scheduled',delivered:'Delivered'};
+ const dl=Y.deliveries.map(d=>{const its=d.items.map(([id,q])=>BYID[id].n+(q==='quote'?'':' · '+q+' t')).join('   +   ');return `<div class="dlv reveal"><span class="pill ${d.status}">${PT[d.status]}</span><div class="dmid"><div class="dt">${d.id} · ${d.site}</div><div class="ds">${its}</div><div class="deta">${d.status==='enroute'?'<b>'+d.eta+'</b> · '+d.truck:d.eta}</div></div><div class="dact">${d.status==='enroute'?'<button class="pri" onclick="toast(\'Live GPS truck tracking — prototype\')">Track truck</button>':''}<button onclick="toast(\'E-ticket — prototype\')">E-ticket</button></div></div>`;}).join('');
+ const ag=Y.again.map(id=>card(BYID[id])).join('');
+ const od=Y.orders.map(o=>`<div class="ordrow"><div><div class="oid">${o.id}</div><div class="od">${o.date}</div></div><div class="oit">${o.it}</div><div class="ot">${money(o.t)}</div><div class="oact"><button onclick="toast(\'E-ticket — prototype\')">E-ticket</button><button onclick="toast(\'Items re-added — prototype\')">Reorder</button></div></div>`).join('');
+ const si=Y.sites.map(([n,t])=>`<div class="st"><span class="sn">${n}</span><span class="stag">${t}</span></div>`).join('');
+ const jb=Y.jobs.map((j,i)=>`<div class="jb2"><div><div class="jn2">${j.n}</div><div class="jm">${j.items.length} materials · last ${j.last}</div></div><button onclick="reorderJob(${i})">Reorder →</button></div>`).join('');
+ document.getElementById('yardwrap').innerHTML=`<div class="yard">
+  <div class="ywelcome"><div><div class="eyb">Trade account · ${Y.acct}</div><h1>Welcome back, ${Y.co}</h1><div class="sub">Your jobs, deliveries and reorders — all in one place.</div></div><div class="wr"><div class="ychip">Account manager<b>${Y.rep.n}</b></div><div class="ychip">Terms<b>${Y.terms} · Good standing</b></div><div class="ychip">This season<b>$${Math.round(Y.season.spend/1000)}K · ${Y.season.tonnes.toLocaleString()} t</b></div></div></div>
+  <div class="yquick">
+   <div class="qtile" onclick="go('plp',{list:'reorder',title:'Buy again'})"><div class="qi">${YIC.reorder}</div><div><div class="ql">Reorder</div><div class="qs">From your history</div></div></div>
+   <div class="qtile" onclick="toast('Live delivery tracking — prototype')"><div class="qi">${YIC.truck}</div><div><div class="ql">Track delivery</div><div class="qs">${Y.deliveries.length} active now</div></div></div>
+   <div class="qtile" onclick="go('load')"><div class="qi">${YIC.calc}</div><div><div class="ql">Build a load</div><div class="qs">Estimate a job</div></div></div>
+   <div class="qtile" onclick="openQuote(2013)"><div class="qi">${YIC.doc}</div><div><div class="ql">Start a quote</div><div class="qs">Asphalt &amp; concrete</div></div></div>
+  </div>
+  <div class="ygrid">
+   <div class="ymain">
+    <div class="ysec"><div class="ysh"><h2>Active deliveries</h2><a onclick="toast('All deliveries — prototype')">View all</a></div>${dl}</div>
+    <div class="ysec"><div class="ysh"><h2>Buy again</h2><a onclick="go('plp',{list:'reorder',title:'Buy again'})">See all</a></div><div class="grid">${ag}</div></div>
+    <div class="ysec"><div class="ysh"><h2>Recent orders</h2></div><div class="ycard" style="padding:4px 18px">${od}</div></div>
+   </div>
+   <div class="yside">
+    <div class="ycard"><h3>Your account manager</h3><div class="repc"><div class="av">${ini}</div><div><div class="rn">${Y.rep.n}</div><div class="rt">${Y.rep.t}</div></div></div><div class="repc2"><a href="#" onclick="return false">${YIC.phone}${Y.rep.ph}</a><a href="#" onclick="return false">${YIC.mail}${Y.rep.em}</a></div></div>
+    <div class="ycard"><h3>Credit &amp; terms</h3><div style="font-size:13px;color:var(--mut)">${money(Y.credit[0])} of ${money(Y.credit[1])} used</div><div class="meter"><span style="width:${pct}%"></span></div><div style="font-size:12px;color:var(--mut2)">${money(Y.credit[1]-Y.credit[0])} available · ${Y.terms}</div></div>
+    <div class="ycard"><h3>This season</h3><div class="statbig">${money(Y.season.spend)}</div><div class="statsub">${Y.season.tonnes.toLocaleString()} tonnes · ${Y.jobs.length} active jobs</div></div>
+    <div class="ycard"><h3>Ship-to sites</h3><div class="sitelist">${si}</div></div>
+    <div class="ycard"><h3>Saved jobs</h3><div class="joblist">${jb}</div></div>
+   </div>
+  </div>
+ </div>`;
+ if(typeof observeReveals==='function')observeReveals();
+}
+
+renderHome();updateCart();
+</script>
+</body>
+</html>
